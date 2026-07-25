@@ -8,3 +8,6 @@ from typing import Any
 class AgentSession:
     output: str | None = None
     transcript: list[dict[str, Any]] = field(default_factory=list)
+    cost_usd: float = 0.0
+    latency_ms: float = 0.0
+    metadata: dict[str, Any] = field(default_factory=dict)

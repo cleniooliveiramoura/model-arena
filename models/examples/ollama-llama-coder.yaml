@@ -1,0 +1,9 @@
+id: ollama-llama-coder
+provider: ollama
+model: llama3.2
+tags: [coding]
+metadata:
+  temperature: 0.0
+  max_tokens: 4096
+  max_cost_usd: 0.10
+  api_base: http://127.0.0.1:11434

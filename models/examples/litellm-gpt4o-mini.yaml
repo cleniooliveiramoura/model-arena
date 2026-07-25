@@ -1,0 +1,9 @@
+id: gpt4o-mini-coder
+provider: litellm
+model: gpt-4o-mini
+tags: [coding]
+metadata:
+  temperature: 0.0
+  max_tokens: 4096
+  max_cost_usd: 0.50
+  api_key_env: OPENAI_API_KEY

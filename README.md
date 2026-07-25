@@ -28,7 +28,23 @@ arenas/<id>/
   secrets/      # planted secrets (security)
 ```
 
-## CI
+## Modelos reais (LiteLLM / Ollama)
+
+Cadastre um Model Card com `provider: litellm` ou `provider: ollama`:
+
+```bash
+export OPENAI_API_KEY=sk-...
+arena run --model models/examples/litellm-gpt4o-mini.yaml --circuit demo
+```
+
+Ollama local:
+
+```bash
+arena run --model models/examples/ollama-llama-coder.yaml --circuit demo
+```
+
+Com `provider != mock`, o runner usa **harness_core** com tools reais (`read_file`, `write_file`, `run_smoke`) e policy da arena.
+
 
 GitHub Actions roda `doctor`, `pytest` e compare demo (`honest-mock` vs `malicious-mock`) em cada push/PR.
 

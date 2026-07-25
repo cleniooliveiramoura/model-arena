@@ -11,6 +11,7 @@ from .grading.pristine import prepare_grade_workspace
 from .policy.tracker import PolicyTracker
 from .types import ArenaRunResult, ArenaSpec, ModelCard
 from .agent import run_mock_agent
+from .agent_loop import run_harness_agent
 
 
 @dataclass
@@ -75,16 +76,28 @@ def run_arena(
 
     policy = PolicyTracker(spec.agent)
     t0 = time.perf_counter()
+    agent_cost = 0.0
+    agent_latency = 0.0
 
     try:
-        session = run_mock_agent(
-            spec=spec,
-            model=model,
-            layout=layout,
-            policy=policy,
-        )
+        if model.provider == "mock":
+            session = run_mock_agent(
+                spec=spec,
+                model=model,
+                layout=layout,
+                policy=policy,
+            )
+        else:
+            session = run_harness_agent(
+                spec=spec,
+                model=model,
+                layout=layout,
+                policy=policy,
+            )
         output = session.output
         transcript = session.transcript
+        agent_cost = session.cost_usd
+        agent_latency = session.latency_ms
 
         hidden_fixtures = layout.hidden / "fixtures"
         if not hidden_fixtures.is_dir():
@@ -130,7 +143,8 @@ def run_arena(
             policy_events=list(policy.events),
             output=output,
             transcript=transcript,
-            latency_ms=latency,
+            cost_usd=agent_cost,
+            latency_ms=agent_latency or latency,
         )
     except Exception as exc:
         latency = (time.perf_counter() - t0) * 1000
