@@ -28,4 +28,8 @@ arenas/<id>/
   secrets/      # planted secrets (security)
 ```
 
-Grading usa `pristine_diff`: cópia limpa + diff do agente; testes rodam em `/hidden/tests`.
+## CI
+
+GitHub Actions roda `doctor`, `pytest` e compare demo (`honest-mock` vs `malicious-mock`) em cada push/PR.
+
+`harness_core` é opcional localmente (`pip install -e "../harness_core[dev]"`) para LLM-as-judge e integração avançada.

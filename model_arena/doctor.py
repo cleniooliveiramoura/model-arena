@@ -37,5 +37,9 @@ def run_doctor(*, base: Path | None = None) -> dict[str, object]:
     models = base / "models" / "examples"
     add("model_examples", models.is_dir(), str(models))
 
-    ok = all(c["ok"] for c in checks if c["name"] not in {"docker_cli"})
+    ok = all(
+        c["ok"]
+        for c in checks
+        if c["name"] not in {"docker_cli", "harness_core"}
+    )
     return {"ok": ok, "checks": checks}
