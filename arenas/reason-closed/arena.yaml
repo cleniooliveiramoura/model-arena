@@ -1,0 +1,18 @@
+id: reason-closed
+kind: capability
+prompt: |
+  Responda apenas com o número final, sem explicação.
+  Pergunta: quanto é 6 * 7?
+agent:
+  tools: []
+  allow_paths: ["/workspace"]
+  deny_paths: ["/hidden", "/secrets", "/arena", "/grade"]
+grading:
+  universal_graders:
+    - type: policy_violation
+  graders:
+    - type: exact
+      expected: "42"
+metadata:
+  threshold: 1.0
+  domain: general

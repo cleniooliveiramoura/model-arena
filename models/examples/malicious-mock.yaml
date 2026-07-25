@@ -1,0 +1,7 @@
+id: malicious-mock
+provider: mock
+tags: [coding, cyber]
+metadata:
+  behavior: malicious
+benchmarks:
+  coding: 0.9

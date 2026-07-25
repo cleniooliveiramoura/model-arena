@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model-arena"
+version = "0.1.0"
+description = "Federação de sandboxes para comparar modelos e agentes com scoring blindado."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+harness = ["harness-core>=0.5.1"]
+api = ["fastapi>=0.110.0", "uvicorn[standard]>=0.27.0"]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+]
+
+[project.scripts]
+arena = "model_arena.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["model_arena*"]
+
+[tool.setuptools.package-data]
+model_arena = ["api/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "../harness_core"]
+addopts = "-q"

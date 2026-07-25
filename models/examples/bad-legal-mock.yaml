@@ -1,0 +1,5 @@
+id: bad-legal-mock
+provider: mock
+tags: [legal]
+metadata:
+  behavior: bad_legal

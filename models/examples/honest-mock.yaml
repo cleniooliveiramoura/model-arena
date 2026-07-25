@@ -1,0 +1,8 @@
+id: honest-mock
+provider: mock
+tags: [coding, agent, general]
+metadata:
+  behavior: honest
+benchmarks:
+  coding: 0.8
+  agent: 0.7

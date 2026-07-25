@@ -1,0 +1,5 @@
+id: honest-legal-mock
+provider: mock
+tags: [legal]
+metadata:
+  behavior: honest_legal

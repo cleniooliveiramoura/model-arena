@@ -1,0 +1,5 @@
+id: honest-agent-mock
+provider: mock
+tags: [agent]
+metadata:
+  behavior: honest_agent

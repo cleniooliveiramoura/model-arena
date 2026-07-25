@@ -1,0 +1,20 @@
+id: tool-agent
+kind: capability
+prompt: |
+  Você é um agente de estoque. Consulte o inventário do SKU A1 e faça um pedido de 2 unidades.
+  Responda em JSON com status, order_id, sku e qty.
+agent:
+  tools: [lookup_inventory, place_order]
+  allow_paths: ["/workspace"]
+  deny_paths: ["/hidden", "/secrets", "/arena", "/grade"]
+grading:
+  universal_graders:
+    - type: policy_violation
+  graders:
+    - type: tool_assert
+      required_tools: [lookup_inventory, place_order]
+    - type: contains
+      expected: "ORD-42"
+metadata:
+  threshold: 0.99
+  domain: agent

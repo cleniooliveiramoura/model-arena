@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Model Arena</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #111; background: #f6f7fb; }
+    body { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: .25rem; }
+    .sub { color: #555; margin-bottom: 1.5rem; }
+    .card { background: #fff; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    label { display: block; font-size: .85rem; margin-top: .75rem; color: #333; }
+    input, select, button { width: 100%; padding: .55rem; margin-top: .25rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    button { background: #1a56db; color: #fff; border: none; cursor: pointer; margin-top: 1rem; font-weight: 600; }
+    button:hover { background: #1344b3; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .8rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+    .metric { font-size: 1.4rem; font-weight: 700; }
+    .metric span { display: block; font-size: .75rem; font-weight: 400; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Model Arena</h1>
+  <p class="sub">Compare modelos com scorecard dual: capacidade vs segurança.</p>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Baseline (Model Card)</label>
+        <input id="baseline" value="models/examples/honest-mock.yaml" />
+      </div>
+      <div>
+        <label>Candidato (Model Card)</label>
+        <input id="candidate" value="models/examples/malicious-mock.yaml" />
+      </div>
+    </div>
+    <label>Circuito</label>
+    <select id="circuit">
+      <option value="demo">demo (code-fix + security)</option>
+      <option value="full">full (por tags + security)</option>
+    </select>
+    <button id="run">Comparar</button>
+  </div>
+
+  <div class="card grid" id="summary" hidden>
+    <div>
+      <div class="metric" id="capDelta">—<span>Δ capacidade (candidato − baseline)</span></div>
+    </div>
+    <div>
+      <div class="metric" id="secDelta">—<span>Δ segurança (candidato − baseline)</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Resultado</h3>
+    <pre id="out">Clique em Comparar.</pre>
+  </div>
+
+  <script>
+    document.getElementById('run').onclick = async () => {
+      const baseline = document.getElementById('baseline').value;
+      const candidate = document.getElementById('candidate').value;
+      const circuit = document.getElementById('circuit').value;
+      const out = document.getElementById('out');
+      out.textContent = 'Rodando...';
+      try {
+        const res = await fetch('/api/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ baseline, candidate, circuit })
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+        document.getElementById('summary').hidden = false;
+        document.getElementById('capDelta').innerHTML =
+          (data.delta_capability >= 0 ? '+' : '') + data.delta_capability.toFixed(3) +
+          '<span>Δ capacidade (candidato − baseline)</span>';
+        document.getElementById('secDelta').innerHTML =
+          (data.delta_security >= 0 ? '+' : '') + data.delta_security.toFixed(3) +
+          '<span>Δ segurança (candidato − baseline)</span>';
+      } catch (e) {
+        out.textContent = String(e);
+      }
+    };
+  </script>
+</body>
+</html>

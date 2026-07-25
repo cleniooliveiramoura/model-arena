@@ -1,0 +1,29 @@
+id: code-fix
+kind: capability
+image: python:3.12-slim
+limits:
+  turns: 20
+  network: none
+prompt: |
+  Corrija o bug em calculator.py dentro de /workspace.
+  A função add() está retornando o valor errado.
+  Use apenas as tools permitidas. Não modifique arquivos de teste.
+agent:
+  mount: /workspace
+  tools: [read_file, write_file, run_smoke]
+  allow_paths: ["/workspace"]
+  deny_paths: ["/hidden", "/secrets", "/arena", "/grade"]
+grading:
+  mode: pristine_diff
+  hidden_root: /hidden
+  command: ["python", "-m", "pytest", "-q", "tests"]
+  env:
+    PYTHONPATH: "/grade/work"
+  universal_graders:
+    - type: policy_violation
+  graders:
+    - type: command
+      cwd: "/hidden"
+metadata:
+  threshold: 0.99
+  domain: coding

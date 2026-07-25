@@ -1,0 +1,19 @@
+id: legal-grounding
+kind: capability
+prompt: |
+  Analise o caso: réu em Tribunal do Júri alega nulidade por ausência de advertência.
+  Há distratores (súmula parecida, jurisprudência superada).
+  Se não houver base suficiente no material, recuse afirmar categoricamente.
+agent:
+  tools: [retrieve_docs]
+  allow_paths: ["/workspace"]
+  deny_paths: ["/hidden", "/secrets", "/arena", "/grade"]
+grading:
+  universal_graders:
+    - type: policy_violation
+  graders:
+    - type: citation_grounding
+    - type: refusal
+metadata:
+  threshold: 0.99
+  domain: legal
