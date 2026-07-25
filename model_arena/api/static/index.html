@@ -5,67 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Model Arena</title>
   <style>
-    :root { font-family: system-ui, sans-serif; color: #111; background: #f6f7fb; }
-    body { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
-    h1 { margin-bottom: .25rem; }
-    .sub { color: #555; margin-bottom: 1.5rem; }
-    .card { background: #fff; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    label { display: block; font-size: .85rem; margin-top: .75rem; color: #333; }
-    input, select, button { width: 100%; padding: .55rem; margin-top: .25rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-    button { background: #1a56db; color: #fff; border: none; cursor: pointer; margin-top: 1rem; font-weight: 600; }
-    button:hover { background: #1344b3; }
-    button:disabled { background: #94a3b8; cursor: wait; }
-    button.secondary { background: #475569; }
-    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .8rem; max-height: 480px; }
+    :root {
+      font-family: system-ui, sans-serif;
+      color: #0f172a;
+      background: #f1f5f9;
+      --ok: #16a34a;
+      --fail: #dc2626;
+      --warn: #d97706;
+      --cap: #2563eb;
+      --sec: #7c3aed;
+    }
+    body { max-width: 1100px; margin: 1.5rem auto; padding: 0 1rem 2rem; }
+    h1 { margin: 0 0 .2rem; font-size: 1.75rem; }
+    .sub { color: #64748b; margin-bottom: 1.25rem; }
+    .card { background: #fff; border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(15,23,42,.08); border: 1px solid #e2e8f0; }
+    label { display: block; font-size: .82rem; font-weight: 600; margin-top: .7rem; color: #475569; }
+    input, select, button { width: 100%; padding: .55rem .65rem; margin-top: .25rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: .92rem; }
+    button.primary { background: #2563eb; color: #fff; border: none; cursor: pointer; margin-top: 1rem; font-weight: 600; }
+    button.primary:hover { background: #1d4ed8; }
+    button.primary:disabled { background: #94a3b8; cursor: wait; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-    .metric { font-size: 1.4rem; font-weight: 700; }
-    .metric span { display: block; font-size: .75rem; font-weight: 400; color: #666; }
-    .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; }
-    .tabs button { width: auto; margin: 0; padding: .45rem 1rem; background: #e2e8f0; color: #334155; }
-    .tabs button.active { background: #1a56db; color: #fff; }
-    .hint { font-size: .8rem; color: #64748b; margin-top: .5rem; }
-    .status { padding: .5rem .75rem; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: .85rem; margin-top: .75rem; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+    .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tabs button { width: auto; margin: 0; padding: .45rem 1rem; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .tabs button.active { background: #2563eb; color: #fff; }
+    .hint { font-size: .8rem; color: #64748b; margin-top: .5rem; line-height: 1.4; }
+    .status { padding: .55rem .75rem; border-radius: 8px; background: #fef3c7; color: #92400e; font-size: .85rem; margin-top: .75rem; }
     .status.ok { background: #dcfce7; color: #166534; }
     .status.err { background: #fee2e2; color: #991b1b; }
+
+    /* Dashboard */
+    #dashboard { display: none; }
+    #dashboard.visible { display: block; }
+    .score-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .score-box { border-radius: 10px; padding: 1rem; color: #fff; }
+    .score-box.cap { background: linear-gradient(135deg, #2563eb, #1e40af); }
+    .score-box.sec { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+    .score-box .val { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .score-box .lbl { font-size: .8rem; opacity: .9; margin-top: .25rem; }
+    .score-box .badge { display: inline-block; margin-top: .5rem; padding: .15rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 700; background: rgba(255,255,255,.25); }
+
+    .compare-head { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; margin-bottom: 1rem; text-align: center; }
+    .compare-head .delta { font-size: 1.1rem; font-weight: 700; align-self: center; }
+    .compare-head .model-name { font-size: .85rem; color: #64748b; margin-bottom: .25rem; }
+    .compare-head .model-score { font-size: 1.5rem; font-weight: 800; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th, td { padding: .55rem .5rem; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    th { color: #64748b; font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+    .pill { display: inline-block; padding: .12rem .45rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+    .pill.ok { background: #dcfce7; color: #166534; }
+    .pill.fail { background: #fee2e2; color: #991b1b; }
+    .pill.cap { background: #dbeafe; color: #1e40af; }
+    .pill.sec { background: #ede9fe; color: #5b21b6; }
+    .grade-list { margin: 0; padding-left: 1rem; color: #475569; font-size: .78rem; }
+    .grade-list li { margin: .15rem 0; }
+    .flags { margin-top: .5rem; }
+    .flag { display: inline-block; background: #fef2f2; color: #991b1b; font-size: .72rem; padding: .15rem .4rem; border-radius: 4px; margin: .15rem .2rem 0 0; }
+
+    details.raw { margin-top: 1rem; }
+    details.raw summary { cursor: pointer; color: #64748b; font-size: .85rem; font-weight: 600; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .75rem; max-height: 360px; margin-top: .5rem; }
+    .meta { font-size: .78rem; color: #64748b; margin-top: .5rem; }
   </style>
 </head>
 <body>
   <h1>Model Arena</h1>
-  <p class="sub">Avalie modelos com scorecard dual: capacidade vs segurança.</p>
+  <p class="sub">Avalie e compare modelos reais (Ollama, LiteLLM) com scorecard dual: capacidade vs segurança.</p>
 
   <div class="tabs">
     <button id="tabRun" class="active">Rodar modelo</button>
-    <button id="tabCompare">Comparar</button>
+    <button id="tabCompare">Comparar modelos</button>
   </div>
 
   <div class="card" id="panelRun">
-    <label>Model Card</label>
-    <select id="runModel">
-      <option value="models/examples/ollama-gemma-coder.yaml">Ollama Gemma 4 12B Coder</option>
-      <option value="models/examples/ollama-llama-coder.yaml">Ollama Llama 3.2</option>
-      <option value="models/examples/litellm-gpt4o-mini.yaml">LiteLLM GPT-4o-mini</option>
-      <option value="models/examples/honest-mock.yaml">Mock honesto (rápido)</option>
-    </select>
+    <label>Modelo</label>
+    <select id="runModel"></select>
     <label>Circuito</label>
     <select id="runCircuit">
       <option value="demo">demo (code-fix + security)</option>
       <option value="full">full (por tags + security)</option>
     </select>
-    <p class="hint">Modelos Ollama locais podem levar vários minutos. Mantenha esta aba aberta.</p>
+    <p class="hint">Modelos Ollama locais podem levar 5–15 min por arena. LiteLLM exige API key no ambiente do servidor.</p>
     <div id="runStatus" class="status" hidden></div>
-    <button id="btnRun">Rodar circuito</button>
+    <button id="btnRun" class="primary">Rodar circuito</button>
   </div>
 
   <div class="card" id="panelCompare" hidden>
     <div class="grid">
       <div>
-        <label>Baseline (Model Card)</label>
-        <input id="baseline" value="models/examples/honest-mock.yaml" />
+        <label>Baseline (referência)</label>
+        <select id="baseline"></select>
       </div>
       <div>
-        <label>Candidato (Model Card)</label>
-        <input id="candidate" value="models/examples/malicious-mock.yaml" />
+        <label>Candidato (a avaliar)</label>
+        <select id="candidate"></select>
       </div>
     </div>
     <label>Circuito</label>
@@ -73,111 +107,213 @@
       <option value="demo">demo (code-fix + security)</option>
       <option value="full">full (por tags + security)</option>
     </select>
-    <button id="btnCompare">Comparar</button>
+    <p class="hint">Compare dois modelos reais — ex.: Gemma vs GPT-4o-mini, ou Gemma vs mock malicioso. Pode levar o dobro do tempo de um run.</p>
+    <div id="cmpStatus" class="status" hidden></div>
+    <button id="btnCompare" class="primary">Comparar</button>
   </div>
 
-  <div class="card grid" id="summary" hidden>
-    <div>
-      <div class="metric" id="capScore">—<span>Capacidade</span></div>
-    </div>
-    <div>
-      <div class="metric" id="secScore">—<span>Segurança</span></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Resultado</h3>
-    <pre id="out">Selecione Rodar modelo ou Comparar.</pre>
+  <div id="dashboard">
+    <div id="dashContent"></div>
+    <details class="raw card">
+      <summary>JSON técnico (expandir)</summary>
+      <pre id="rawJson"></pre>
+    </details>
   </div>
 
   <script>
+    const MODEL_DEFAULTS = {
+      run: 'models/examples/ollama-gemma-coder.yaml',
+      baseline: 'models/examples/ollama-gemma-coder.yaml',
+      candidate: 'models/examples/litellm-gpt4o-mini.yaml',
+    };
+
     const tabRun = document.getElementById('tabRun');
     const tabCompare = document.getElementById('tabCompare');
     const panelRun = document.getElementById('panelRun');
     const panelCompare = document.getElementById('panelCompare');
-    const out = document.getElementById('out');
-    const summary = document.getElementById('summary');
+    const dashboard = document.getElementById('dashboard');
+    const dashContent = document.getElementById('dashContent');
+    const rawJson = document.getElementById('rawJson');
     const runStatus = document.getElementById('runStatus');
+    const cmpStatus = document.getElementById('cmpStatus');
 
-    tabRun.onclick = () => {
-      tabRun.classList.add('active');
-      tabCompare.classList.remove('active');
-      panelRun.hidden = false;
-      panelCompare.hidden = true;
-    };
-    tabCompare.onclick = () => {
-      tabCompare.classList.add('active');
-      tabRun.classList.remove('active');
-      panelCompare.hidden = false;
-      panelRun.hidden = true;
-    };
+    function pct(n) { return (Number(n) * 100).toFixed(0) + '%'; }
+    function fmtDelta(n) { return (n >= 0 ? '+' : '') + Number(n).toFixed(3); }
 
-    function showScores(data, prefix = '') {
-      summary.hidden = false;
-      const cap = prefix ? data[prefix].capability_score : data.capability_score;
-      const sec = prefix ? data[prefix].security_score : data.security_score;
-      document.getElementById('capScore').innerHTML =
-        cap.toFixed(3) + '<span>Capacidade</span>';
-      document.getElementById('secScore').innerHTML =
-        sec.toFixed(3) + '<span>Segurança</span>';
+    function pill(ok, yes = 'OK', no = 'FALHOU') {
+      return `<span class="pill ${ok ? 'ok' : 'fail'}">${ok ? yes : no}</span>`;
     }
 
+    function renderGrades(grades) {
+      if (!grades || !grades.length) return '—';
+      return '<ul class="grade-list">' + grades.map(g =>
+        `<li><strong>${g.grader}</strong>: ${g.passed ? '✓' : '✗'} ${g.score.toFixed(2)} — ${esc(g.reasoning || '').slice(0, 80)}</li>`
+      ).join('') + '</ul>';
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function renderRunPanel(data) {
+      return `
+        <div class="card">
+          <h3 style="margin:0 0 .75rem">Scorecard — ${esc(data.model_id)}</h3>
+          <div class="score-row">
+            <div class="score-box cap">
+              <div class="val">${pct(data.capability_score)}</div>
+              <div class="lbl">Capacidade</div>
+              <span class="badge">${data.capability_passed ? 'APROVADO' : 'REPROVADO'}</span>
+            </div>
+            <div class="score-box sec">
+              <div class="val">${pct(data.security_score)}</div>
+              <div class="lbl">Segurança</div>
+              <span class="badge">${data.security_passed ? 'APROVADO' : 'REPROVADO'}</span>
+            </div>
+          </div>
+          <div class="meta">Latência total: ${(data.total_latency_ms / 1000).toFixed(1)}s · Custo: $${Number(data.total_cost_usd).toFixed(4)}</div>
+          ${data.security_flags && data.security_flags.length ? `<div class="flags">${data.security_flags.map(f => `<span class="flag">${esc(f)}</span>`).join('')}</div>` : ''}
+        </div>
+        <div class="card">
+          <h4 style="margin:0 0 .75rem">Arenas</h4>
+          <table>
+            <thead><tr><th>Arena</th><th>Tipo</th><th>Score</th><th>Status</th><th>Graders</th></tr></thead>
+            <tbody>${(data.arenas || []).map(a => `
+              <tr>
+                <td><strong>${esc(a.arena_id)}</strong></td>
+                <td><span class="pill ${a.kind === 'security' ? 'sec' : 'cap'}">${a.kind}</span></td>
+                <td>${pct(a.mean_score)}</td>
+                <td>${pill(a.passed)}</td>
+                <td>${renderGrades(a.grades)}</td>
+              </tr>`).join('')}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderComparePanel(data) {
+      const b = data.baseline, c = data.candidate;
+      return `
+        <div class="card">
+          <h3 style="margin:0 0 1rem">Comparação</h3>
+          <div class="compare-head">
+            <div>
+              <div class="model-name">Baseline · ${esc(b.model_id)}</div>
+              <div class="model-score" style="color:var(--cap)">${pct(b.capability_score)}</div>
+              <div style="font-size:.8rem;color:#64748b">cap · sec ${pct(b.security_score)}</div>
+            </div>
+            <div class="delta">
+              <div style="color:var(--cap)">Δ cap ${fmtDelta(data.delta_capability)}</div>
+              <div style="color:var(--sec);margin-top:.25rem">Δ sec ${fmtDelta(data.delta_security)}</div>
+            </div>
+            <div>
+              <div class="model-name">Candidato · ${esc(c.model_id)}</div>
+              <div class="model-score" style="color:var(--cap)">${pct(c.capability_score)}</div>
+              <div style="font-size:.8rem;color:#64748b">cap · sec ${pct(c.security_score)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="card"><h4 style="margin:0 0 .5rem">${esc(b.model_id)}</h4>${arenaMini(b)}</div>
+          <div class="card"><h4 style="margin:0 0 .5rem">${esc(c.model_id)}</h4>${arenaMini(c)}</div>
+        </div>`;
+    }
+
+    function arenaMini(sc) {
+      return `<table>
+        <thead><tr><th>Arena</th><th>Score</th><th></th></tr></thead>
+        <tbody>${(sc.arenas || []).map(a => `
+          <tr>
+            <td>${esc(a.arena_id)} <span class="pill ${a.kind === 'security' ? 'sec' : 'cap'}">${a.kind.slice(0,3)}</span></td>
+            <td>${pct(a.mean_score)}</td>
+            <td>${pill(a.passed)}</td>
+          </tr>`).join('')}</tbody>
+      </table>`;
+    }
+
+    function showResult(mode, data) {
+      dashboard.classList.add('visible');
+      rawJson.textContent = JSON.stringify(data, null, 2);
+      dashContent.innerHTML = mode === 'compare' ? renderComparePanel(data) : renderRunPanel(data);
+      dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function fillSelect(el, models, selected) {
+      el.innerHTML = models.map(m =>
+        `<option value="${esc(m.path)}"${m.path === selected ? ' selected' : ''}>${esc(m.label)}</option>`
+      ).join('');
+    }
+
+    async function loadModels() {
+      const res = await fetch('/api/models');
+      const { models } = await res.json();
+      fillSelect(document.getElementById('runModel'), models, MODEL_DEFAULTS.run);
+      fillSelect(document.getElementById('baseline'), models, MODEL_DEFAULTS.baseline);
+      fillSelect(document.getElementById('candidate'), models, MODEL_DEFAULTS.candidate);
+    }
+
+    tabRun.onclick = () => {
+      tabRun.classList.add('active'); tabCompare.classList.remove('active');
+      panelRun.hidden = false; panelCompare.hidden = true;
+    };
+    tabCompare.onclick = () => {
+      tabCompare.classList.add('active'); tabRun.classList.remove('active');
+      panelCompare.hidden = false; panelRun.hidden = true;
+    };
+
     document.getElementById('btnRun').onclick = async () => {
-      const model_path = document.getElementById('runModel').value;
-      const circuit = document.getElementById('runCircuit').value;
       const btn = document.getElementById('btnRun');
       btn.disabled = true;
       runStatus.hidden = false;
       runStatus.className = 'status';
-      runStatus.textContent = 'Rodando circuito… modelos locais podem levar 5–15 min.';
-      out.textContent = 'Aguardando resposta da API…';
+      runStatus.textContent = 'Rodando circuito… aguarde (modelos locais: 5–15 min).';
       try {
         const res = await fetch('/api/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model_path, circuit })
+          body: JSON.stringify({
+            model_path: document.getElementById('runModel').value,
+            circuit: document.getElementById('runCircuit').value,
+          }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
-        out.textContent = JSON.stringify(data, null, 2);
-        showScores(data);
+        showResult('run', data);
         runStatus.className = 'status ok';
-        runStatus.textContent = data.capability_passed
-          ? 'Concluído — capacidade OK'
-          : 'Concluído — ver detalhes abaixo';
+        runStatus.textContent = data.capability_passed ? 'Concluído — capacidade OK' : 'Concluído — ver painel';
       } catch (e) {
-        out.textContent = String(e);
         runStatus.className = 'status err';
-        runStatus.textContent = 'Erro na execução';
-      } finally {
-        btn.disabled = false;
-      }
+        runStatus.textContent = 'Erro: ' + e.message;
+      } finally { btn.disabled = false; }
     };
 
     document.getElementById('btnCompare').onclick = async () => {
-      const baseline = document.getElementById('baseline').value;
-      const candidate = document.getElementById('candidate').value;
-      const circuit = document.getElementById('circuit').value;
-      out.textContent = 'Rodando compare…';
+      const btn = document.getElementById('btnCompare');
+      btn.disabled = true;
+      cmpStatus.hidden = false;
+      cmpStatus.className = 'status';
+      cmpStatus.textContent = 'Comparando dois modelos… pode levar 10–30 min com Ollama.';
       try {
         const res = await fetch('/api/compare', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ baseline, candidate, circuit })
+          body: JSON.stringify({
+            baseline: document.getElementById('baseline').value,
+            candidate: document.getElementById('candidate').value,
+            circuit: document.getElementById('circuit').value,
+          }),
         });
         const data = await res.json();
-        out.textContent = JSON.stringify(data, null, 2);
-        document.getElementById('capScore').innerHTML =
-          (data.delta_capability >= 0 ? '+' : '') + data.delta_capability.toFixed(3) +
-          '<span>Δ capacidade (candidato − baseline)</span>';
-        document.getElementById('secScore').innerHTML =
-          (data.delta_security >= 0 ? '+' : '') + data.delta_security.toFixed(3) +
-          '<span>Δ segurança (candidato − baseline)</span>';
-        summary.hidden = false;
+        if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+        showResult('compare', data);
+        cmpStatus.className = 'status ok';
+        cmpStatus.textContent = 'Comparação concluída';
       } catch (e) {
-        out.textContent = String(e);
-      }
+        cmpStatus.className = 'status err';
+        cmpStatus.textContent = 'Erro: ' + e.message;
+      } finally { btn.disabled = false; }
     };
+
+    loadModels();
   </script>
 </body>
 </html>

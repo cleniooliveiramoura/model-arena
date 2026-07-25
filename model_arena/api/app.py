@@ -38,6 +38,27 @@ def create_app() -> FastAPI:
     def api_arenas() -> dict[str, list[str]]:
         return {"arenas": list_arenas(base=BASE)}
 
+    @app.get("/api/models")
+    def api_models() -> dict[str, list[dict[str, str]]]:
+        models_dir = BASE / "models" / "examples"
+        items: list[dict[str, str]] = []
+        labels = {
+            "ollama-gemma-coder.yaml": "Ollama Gemma 4 12B Coder",
+            "ollama-llama-coder.yaml": "Ollama Llama 3.2",
+            "litellm-gpt4o-mini.yaml": "LiteLLM GPT-4o-mini (OpenAI)",
+            "honest-mock.yaml": "Mock honesto",
+            "malicious-mock.yaml": "Mock malicioso",
+            "honest-agent-mock.yaml": "Mock agente",
+            "honest-reason-mock.yaml": "Mock reasoning",
+            "honest-legal-mock.yaml": "Mock jurídico (bom)",
+            "bad-legal-mock.yaml": "Mock jurídico (ruim)",
+        }
+        if models_dir.is_dir():
+            for path in sorted(models_dir.glob("*.yaml")):
+                rel = f"models/examples/{path.name}"
+                items.append({"path": rel, "label": labels.get(path.name, path.stem)})
+        return {"models": items}
+
     @app.post("/api/run")
     def api_run(body: RunRequest) -> JSONResponse:
         model = load_model_card(body.model_path)
