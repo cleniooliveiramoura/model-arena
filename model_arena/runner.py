@@ -11,7 +11,6 @@ from .grading.pristine import prepare_grade_workspace
 from .policy.tracker import PolicyTracker
 from .types import ArenaRunResult, ArenaSpec, ModelCard
 from .agent import run_mock_agent
-from .agent_loop import run_harness_agent
 
 
 @dataclass
@@ -88,6 +87,8 @@ def run_arena(
                 policy=policy,
             )
         else:
+            from .agent_loop import run_harness_agent
+
             session = run_harness_agent(
                 spec=spec,
                 model=model,

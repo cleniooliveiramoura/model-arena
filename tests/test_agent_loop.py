@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.importorskip("harness_core")
+
 from model_arena.agent_loop import run_harness_agent
 from model_arena.arenas import load_arena
 from model_arena.providers import build_provider

@@ -2,11 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from harness_core.config import HarnessConfig
-from harness_core.core.harness import Harness
-from harness_core.core.types import Message, Role, RunSpec
-from harness_core.store.memory_store import InMemoryRunStore
-
 from .providers import build_provider
 from .tools import AgentSession
 from .types import ArenaSpec, ModelCard
@@ -22,6 +17,11 @@ def run_harness_agent(
     provider=None,
 ) -> AgentSession:
     """Executa agent loop real via harness_core (LiteLLM, Ollama, etc.)."""
+    from harness_core.config import HarnessConfig
+    from harness_core.core.harness import Harness
+    from harness_core.core.types import Message, Role, RunSpec
+    from harness_core.store.memory_store import InMemoryRunStore
+
     if provider is None:
         provider = build_provider(model)
 
@@ -74,7 +74,9 @@ def run_harness_agent(
     return session
 
 
-def _history_to_transcript(history: list[Message]) -> list[dict[str, Any]]:
+def _history_to_transcript(history: list) -> list[dict[str, Any]]:
+    from harness_core.core.types import Message, Role
+
     transcript: list[dict[str, Any]] = []
     for msg in history:
         if msg.role == Role.USER:

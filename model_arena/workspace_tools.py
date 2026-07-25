@@ -4,12 +4,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from harness_core.project.tools import ProjectBoundary, ReadFileTool, WriteFileTool
 from harness_core.tools.base import Tool, ToolRegistry
 
 from .grading.pristine import run_command
 from .policy.tracker import PolicyTracker
 from .types import ArenaSpec
+
+
+def _harness_project_tools():
+    from harness_core.project.tools import ProjectBoundary, ReadFileTool, WriteFileTool
+
+    return ProjectBoundary, ReadFileTool, WriteFileTool
 
 
 class PolicyAwareTool(Tool):
@@ -89,6 +94,7 @@ def build_tool_registry(
     workspace: Path,
     policy: PolicyTracker,
 ) -> ToolRegistry:
+    ProjectBoundary, ReadFileTool, WriteFileTool = _harness_project_tools()
     boundary = ProjectBoundary(root=workspace.resolve())
     registry = ToolRegistry()
     allowed = set(spec.agent.tools)
@@ -103,9 +109,5 @@ def build_tool_registry(
         )
     if "run_smoke" in allowed:
         registry.register(RunSmokeTool(workspace, policy))
-
-    for name in allowed:
-        if name not in registry.names():
-            pass  # tools declaradas mas não implementadas nesta arena ficam fora do schema
 
     return registry
