@@ -1,0 +1,12 @@
+id: gemini-3-flash
+provider: litellm
+model: gemini/gemini-3-flash
+tags: [coding, agent, general]
+metadata:
+  label: "Gemini 3 Flash (5 RPM · 20/dia)"
+  temperature: 0.0
+  max_tokens: 4096
+  max_cost_usd: 0.50
+  api_key_env: GEMINI_API_KEY
+  rate_limit_rpm: 5
+  rate_limit_rpd: 20

@@ -1,0 +1,10 @@
+id: ollama-qwen25-3b-hermes
+provider: ollama
+model: qwen2.5-3b-hermes:latest
+tags: [coding, agent, general]
+metadata:
+  label: "Ollama Qwen 2.5 3B Hermes"
+  temperature: 0.0
+  max_tokens: 4096
+  max_cost_usd: 0.05
+  api_base: http://127.0.0.1:11434

@@ -1,0 +1,12 @@
+id: gemini-25-flash-lite
+provider: litellm
+model: gemini/gemini-2.5-flash-lite
+tags: [coding, agent, general]
+metadata:
+  label: "Gemini 2.5 Flash Lite (10 RPM · 20/dia)"
+  temperature: 0.0
+  max_tokens: 4096
+  max_cost_usd: 0.30
+  api_key_env: GEMINI_API_KEY
+  rate_limit_rpm: 10
+  rate_limit_rpd: 20

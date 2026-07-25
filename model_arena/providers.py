@@ -17,7 +17,11 @@ def build_provider(model: ModelCard):
         if not model.model:
             raise ValueError("ModelCard.model é obrigatório para provider litellm")
         api_key_env = model.metadata.get("api_key_env")
-        api_key = os.environ.get(api_key_env) if api_key_env else None
+        api_key = None
+        if api_key_env:
+            api_key = os.environ.get(api_key_env)
+            if api_key is None and api_key_env == "GEMINI_API_KEY":
+                api_key = os.environ.get("GOOGLE_API_KEY")
         return LiteLLMProvider(
             model.model,
             api_key=api_key,
@@ -28,7 +32,7 @@ def build_provider(model: ModelCard):
     if model.provider == "ollama":
         from harness_core.providers.litellm_provider import LiteLLMProvider
 
-        model_name = model.model or "ollama/llama3.2"
+        model_name = model.model or "ollama/llama3.1"
         if not model_name.startswith("ollama/"):
             model_name = f"ollama/{model_name}"
         return LiteLLMProvider(

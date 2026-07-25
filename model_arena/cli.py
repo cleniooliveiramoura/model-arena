@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p_run = sub.add_parser("run", help="Executa circuito para um modelo")
     p_run.add_argument("--model", required=True, help="Caminho do Model Card YAML")
-    p_run.add_argument("--circuit", default="demo", help="demo|full|arena1,arena2")
+    p_run.add_argument("--circuit", default="demo", help="demo|coding|stress|full|arena1,arena2")
     p_run.add_argument("--out", default=None, help="JSON scorecard")
 
     p_cmp = sub.add_parser("compare", help="Compara dois modelos")
@@ -28,6 +28,30 @@ def main(argv: list[str] | None = None) -> int:
     p_cmp.add_argument("candidate", help="Model Card candidato")
     p_cmp.add_argument("--circuit", default="demo")
     p_cmp.add_argument("--out", default=None)
+
+    p_debate = sub.add_parser("debate", help="Discussão agentic entre dois modelos")
+    p_debate.add_argument("model_a", help="Model Card A")
+    p_debate.add_argument("model_b", help="Model Card B")
+    p_debate.add_argument("--arena", default="code-fix", help="Arena base")
+    p_debate.add_argument(
+        "--sandbox",
+        choices=["separate", "shared"],
+        default="separate",
+        help="Sandboxes separadas ou compartilhada",
+    )
+    p_debate.add_argument("--rounds", type=int, default=2, help="Rodadas (A↔B cada)")
+    p_debate.add_argument(
+        "--judge",
+        choices=["heuristic", "llm", "none"],
+        default="heuristic",
+        help="Modo do juiz pós-discussão",
+    )
+    p_debate.add_argument(
+        "--judge-model",
+        default=None,
+        help="Model Card do juiz LLM (ex.: models/examples/litellm-judge.yaml)",
+    )
+    p_debate.add_argument("--out", default=None)
 
     p_serve = sub.add_parser("serve", help="API + UI")
     p_serve.add_argument("--port", type=int, default=8790)
@@ -57,6 +81,25 @@ def main(argv: list[str] | None = None) -> int:
         Path(out).parent.mkdir(parents=True, exist_ok=True)
         Path(out).write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
         print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 0
+
+    if args.command == "debate":
+        from .debate import run_debate
+
+        result = run_debate(
+            args.model_a,
+            args.model_b,
+            arena_id=args.arena,
+            sandbox_mode=args.sandbox,
+            rounds=args.rounds,
+            base=base,
+            judge=args.judge,
+            judge_model=args.judge_model,
+        )
+        out = args.out or str(Path(args.home) / "debate.json")
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Path(out).write_text(json.dumps(result.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
+        print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
         return 0
 
     if args.command == "serve":

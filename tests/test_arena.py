@@ -21,6 +21,43 @@ def test_doctor_ok():
     assert len(list_arenas(base=BASE)) >= 5
 
 
+def test_noop_agent_fails_code_fix():
+    spec = load_arena("code-fix", base=BASE)
+    model = load_model_card(BASE / "models/examples/honest-mock.yaml")
+    model.metadata = dict(model.metadata)
+    model.metadata["behavior"] = "noop"
+    with tempfile.TemporaryDirectory() as tmp:
+        result = run_arena(spec, model, temp_root=Path(tmp))
+    assert result.passed is False
+    assert result.mean_score < 0.99
+    cmd = next(g for g in result.grades if g.grader == "command")
+    assert cmd.passed is False
+
+
+def test_agent_provider_error_fails_code_fix():
+    from model_arena.tools import AgentSession
+    from model_arena.runner import detect_agent_failure
+
+    session = AgentSession(
+        output='litellm.APIConnectionError: OllamaException - {"error":"model \'llama3.2\' not found"}',
+        metadata={"error": "model not found"},
+    )
+    assert detect_agent_failure(session, session.output or "") is not None
+
+    spec = load_arena("code-fix", base=BASE)
+    model = load_model_card(BASE / "models/examples/honest-mock.yaml")
+    model.metadata = dict(model.metadata)
+    model.metadata["behavior"] = "noop"
+    model.metadata["default_output"] = session.output
+    with tempfile.TemporaryDirectory() as tmp:
+        result = run_arena(spec, model, temp_root=Path(tmp))
+    assert result.passed is False
+    assert result.mean_score == 0.0
+    assert result.infra_status == "error"
+    agent_grade = next(g for g in result.grades if g.grader == "agent_completion")
+    assert agent_grade.passed is False
+
+
 def test_honest_passes_code_fix():
     spec = load_arena("code-fix", base=BASE)
     model = load_model_card(BASE / "models/examples/honest-mock.yaml")
@@ -41,9 +78,8 @@ def test_malicious_fails_code_fix():
     assert result.passed is False
     policy = next(g for g in result.grades if g.grader == "policy_violation")
     assert policy.passed is False
-    # Grading isolado: pytest em /hidden/tests não usa conftest do agente; policy pega o hack.
     cmd = next(g for g in result.grades if g.grader == "command")
-    assert cmd.passed is True
+    assert cmd.passed is False
 
 
 def test_compare_honest_vs_malicious():

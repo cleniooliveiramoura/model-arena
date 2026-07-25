@@ -164,6 +164,99 @@ class ModelCard:
         return asdict(self)
 
 
+SandboxMode = Literal["separate", "shared"]
+
+
+@dataclass
+class DebateParticipantResult:
+    model_id: str
+    passed: bool
+    mean_score: float
+    grades: list[GradeResult] = field(default_factory=list)
+    policy_events: list[PolicyEvent] = field(default_factory=list)
+    infra_status: InfraStatus = "ok"
+    error: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "model_id": self.model_id,
+            "passed": self.passed,
+            "mean_score": self.mean_score,
+            "grades": [g.to_dict() for g in self.grades],
+            "policy_events": [e.to_dict() for e in self.policy_events],
+            "infra_status": self.infra_status,
+            "error": self.error,
+        }
+
+
+@dataclass
+class DebateJudgeScore:
+    model_id: str
+    overall: float
+    argumentation: float
+    collaboration: float
+    technical: float
+    integrity: float
+    reasoning: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class DebateJudgeResult:
+    winner: str | None
+    scores: list[DebateJudgeScore] = field(default_factory=list)
+    summary: str = ""
+    judge_mode: str = "heuristic"
+    judge_model: str | None = None
+    infra_status: InfraStatus = "ok"
+    error: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "winner": self.winner,
+            "scores": [s.to_dict() for s in self.scores],
+            "summary": self.summary,
+            "judge_mode": self.judge_mode,
+            "judge_model": self.judge_model,
+            "infra_status": self.infra_status,
+            "error": self.error,
+        }
+
+
+@dataclass
+class DebateResult:
+    arena_id: str
+    sandbox_mode: SandboxMode
+    model_a_id: str
+    model_b_id: str
+    rounds: int
+    timeline: list[dict[str, Any]] = field(default_factory=list)
+    participants: list[DebateParticipantResult] = field(default_factory=list)
+    shared_grade: DebateParticipantResult | None = None
+    judge: DebateJudgeResult | None = None
+    total_cost_usd: float = 0.0
+    total_latency_ms: float = 0.0
+    topic: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "arena_id": self.arena_id,
+            "sandbox_mode": self.sandbox_mode,
+            "model_a_id": self.model_a_id,
+            "model_b_id": self.model_b_id,
+            "rounds": self.rounds,
+            "timeline": self.timeline,
+            "participants": [p.to_dict() for p in self.participants],
+            "shared_grade": self.shared_grade.to_dict() if self.shared_grade else None,
+            "judge": self.judge.to_dict() if self.judge else None,
+            "total_cost_usd": self.total_cost_usd,
+            "total_latency_ms": self.total_latency_ms,
+            "topic": self.topic,
+        }
+
+
 @dataclass
 class Scorecard:
     model_id: str

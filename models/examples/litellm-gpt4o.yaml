@@ -1,0 +1,10 @@
+id: openai-gpt4o
+provider: litellm
+model: gpt-4o
+tags: [coding, agent, general]
+metadata:
+  label: "OpenAI GPT-4o"
+  temperature: 0.0
+  max_tokens: 4096
+  max_cost_usd: 2.0
+  api_key_env: OPENAI_API_KEY

@@ -2,4 +2,5 @@ id: honest-legal-mock
 provider: mock
 tags: [legal]
 metadata:
+  label: "Mock jurídico (bom)"
   behavior: honest_legal

@@ -9,8 +9,9 @@ from pydantic import BaseModel
 
 from ..arenas import list_arenas
 from ..profiler.cards import load_model_card
-from ..profiler.circuit import build_circuit
+from ..profiler.circuit import build_circuit, list_circuits
 from ..report.scorecard import compare_models, run_circuit
+from ..debate import run_debate
 
 BASE = Path(__file__).resolve().parents[2]
 STATIC = Path(__file__).resolve().parent / "static"
@@ -27,6 +28,18 @@ class CompareRequest(BaseModel):
     circuit: str = "demo"
 
 
+class DebateRequest(BaseModel):
+    model_a: str
+    model_b: str
+    arena_id: str = "code-fix"
+    sandbox_mode: str = "separate"
+    rounds: int = 2
+    max_iterations_per_turn: int = 8
+    topic: str | None = None
+    judge: str = "heuristic"
+    judge_model: str | None = None
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="Model Arena", version="0.1.0")
 
@@ -38,25 +51,21 @@ def create_app() -> FastAPI:
     def api_arenas() -> dict[str, list[str]]:
         return {"arenas": list_arenas(base=BASE)}
 
+    @app.get("/api/circuits")
+    def api_circuits() -> dict[str, list[dict[str, object]]]:
+        return {"circuits": list_circuits()}
+
     @app.get("/api/models")
     def api_models() -> dict[str, list[dict[str, str]]]:
         models_dir = BASE / "models" / "examples"
         items: list[dict[str, str]] = []
-        labels = {
-            "ollama-gemma-coder.yaml": "Ollama Gemma 4 12B Coder",
-            "ollama-llama-coder.yaml": "Ollama Llama 3.2",
-            "litellm-gpt4o-mini.yaml": "LiteLLM GPT-4o-mini (OpenAI)",
-            "honest-mock.yaml": "Mock honesto",
-            "malicious-mock.yaml": "Mock malicioso",
-            "honest-agent-mock.yaml": "Mock agente",
-            "honest-reason-mock.yaml": "Mock reasoning",
-            "honest-legal-mock.yaml": "Mock jurídico (bom)",
-            "bad-legal-mock.yaml": "Mock jurídico (ruim)",
-        }
         if models_dir.is_dir():
             for path in sorted(models_dir.glob("*.yaml")):
+                card = load_model_card(path)
                 rel = f"models/examples/{path.name}"
-                items.append({"path": rel, "label": labels.get(path.name, path.stem)})
+                provider = card.provider
+                label = str(card.metadata.get("label") or card.id)
+                items.append({"path": rel, "label": label, "provider": provider})
         return {"models": items}
 
     @app.post("/api/run")
@@ -72,6 +81,32 @@ def create_app() -> FastAPI:
             body.baseline, body.candidate, circuit=body.circuit, base=BASE
         )
         return JSONResponse(result)
+
+    @app.post("/api/debate")
+    def api_debate(body: DebateRequest) -> JSONResponse:
+        if body.sandbox_mode not in ("separate", "shared"):
+            return JSONResponse(
+                {"detail": "sandbox_mode deve ser 'separate' ou 'shared'"},
+                status_code=400,
+            )
+        if body.judge not in ("heuristic", "llm", "none"):
+            return JSONResponse(
+                {"detail": "judge deve ser 'heuristic', 'llm' ou 'none'"},
+                status_code=400,
+            )
+        result = run_debate(
+            body.model_a,
+            body.model_b,
+            arena_id=body.arena_id,
+            sandbox_mode=body.sandbox_mode,  # type: ignore[arg-type]
+            rounds=max(1, min(body.rounds, 6)),
+            max_iterations_per_turn=max(1, min(body.max_iterations_per_turn, 20)),
+            topic=body.topic,
+            base=BASE,
+            judge=body.judge,  # type: ignore[arg-type]
+            judge_model=body.judge_model,
+        )
+        return JSONResponse(result.to_dict())
 
     @app.get("/")
     def index() -> FileResponse:

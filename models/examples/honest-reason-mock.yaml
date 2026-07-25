@@ -2,4 +2,5 @@ id: honest-reason-mock
 provider: mock
 tags: [general]
 metadata:
+  label: "Mock reasoning"
   behavior: honest_reason

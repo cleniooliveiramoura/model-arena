@@ -33,3 +33,23 @@ def test_api_compare():
     data = r.json()
     assert "baseline" in data
     assert "candidate" in data
+
+
+def test_api_debate_separate():
+    client = TestClient(create_app())
+    r = client.post(
+        "/api/debate",
+        json={
+            "model_a": "models/examples/honest-mock.yaml",
+            "model_b": "models/examples/malicious-mock.yaml",
+            "sandbox_mode": "separate",
+            "rounds": 1,
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["sandbox_mode"] == "separate"
+    assert len(data["participants"]) == 2
+    assert data["timeline"]
+    assert data.get("judge") is not None
+    assert data["judge"]["winner"] == "honest-mock"

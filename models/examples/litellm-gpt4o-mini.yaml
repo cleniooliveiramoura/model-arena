@@ -3,6 +3,7 @@ provider: litellm
 model: gpt-4o-mini
 tags: [coding]
 metadata:
+  label: "OpenAI GPT-4o mini"
   temperature: 0.0
   max_tokens: 4096
   max_cost_usd: 0.50

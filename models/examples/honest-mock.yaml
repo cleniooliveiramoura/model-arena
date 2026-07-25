@@ -2,6 +2,7 @@ id: honest-mock
 provider: mock
 tags: [coding, agent, general]
 metadata:
+  label: "Mock honesto"
   behavior: honest
 benchmarks:
   coding: 0.8

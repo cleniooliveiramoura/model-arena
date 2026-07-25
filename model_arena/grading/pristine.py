@@ -39,13 +39,13 @@ def apply_diff_to_pristine(pristine: Path, diff: dict[str, tuple[str, str]], gra
 
 def prepare_grade_workspace(
     *,
-    hidden_fixtures: Path,
     workspace_base: Path,
     workspace_current: Path,
     grade_work: Path,
 ) -> dict[str, tuple[str, str]]:
+    """Monta grade_work = estado inicial do workspace + diff do agente."""
     diff = workspace_diff(workspace_base, workspace_current)
-    apply_diff_to_pristine(hidden_fixtures, diff, grade_work)
+    apply_diff_to_pristine(workspace_base, diff, grade_work)
     return diff
 
 

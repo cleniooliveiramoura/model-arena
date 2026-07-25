@@ -72,6 +72,9 @@
     .chat-bubble.chat-tool { background: #fef3c7; color: #92400e; font-family: ui-monospace, monospace; font-size: .78rem; }
     .chat-bubble.chat-result { background: #f0fdf4; color: #166534; font-size: .78rem; }
     .chat-bubble.chat-warn { background: #fee2e2; color: #991b1b; }
+    .chat-bubble.chat-model-b { background: #ede9fe; color: #5b21b6; align-self: flex-start; max-width: 95%; border-bottom-left-radius: 2px; }
+    .chat-bubble.chat-turn { background: #f1f5f9; color: #64748b; font-size: .75rem; font-weight: 600; text-align: center; }
+    .chat-bubble.chat-meta { background: #ecfdf5; color: #047857; font-size: .78rem; }
     .chat-bubble.chat-muted { background: #f1f5f9; color: #94a3b8; font-style: italic; }
     .chat-bubble code { font-size: .75rem; white-space: pre-wrap; }
 
@@ -93,17 +96,16 @@
   <div class="tabs">
     <button id="tabRun" class="active">Rodar modelo</button>
     <button id="tabCompare">Comparar modelos</button>
+    <button id="tabDebate">Discussão agentic</button>
   </div>
 
   <div class="card" id="panelRun">
     <label>Modelo</label>
     <select id="runModel"></select>
     <label>Circuito</label>
-    <select id="runCircuit">
-      <option value="demo">demo (code-fix + security)</option>
-      <option value="full">full (por tags + security)</option>
-    </select>
-    <p class="hint">Modelos locais (Ollama) podem levar vários minutos.</p>
+    <select id="runCircuit"></select>
+    <p class="hint" id="runCircuitDesc"></p>
+    <p class="hint">Modelos locais (Ollama) podem levar vários minutos — use <strong>stress</strong> só quando quiser avaliação completa.</p>
     <div id="runStatus" class="status" hidden></div>
     <button id="btnRun" class="primary">Rodar circuito</button>
   </div>
@@ -120,13 +122,49 @@
       </div>
     </div>
     <label>Circuito</label>
-    <select id="circuit">
-      <option value="demo">demo (code-fix + security)</option>
-      <option value="full">full (por tags + security)</option>
-    </select>
-    <p class="hint">Os dois modelos passam pelos mesmos desafios. Você verá a "conversa" de cada um lado a lado.</p>
+    <select id="circuit"></select>
+    <p class="hint" id="circuitDesc">Os dois modelos passam pelos mesmos desafios. Você verá a "conversa" de cada um lado a lado.</p>
     <div id="cmpStatus" class="status" hidden></div>
     <button id="btnCompare" class="primary">Comparar</button>
+  </div>
+
+  <div class="card" id="panelDebate" hidden>
+    <div class="grid">
+      <div>
+        <label>Modelo A</label>
+        <select id="debateA"></select>
+      </div>
+      <div>
+        <label>Modelo B</label>
+        <select id="debateB"></select>
+      </div>
+    </div>
+    <label>Arena</label>
+    <select id="debateArena">
+      <option value="code-fix">code-fix — corrigir bug de código</option>
+    </select>
+    <label>Modo de sandbox</label>
+    <select id="debateSandbox">
+      <option value="separate">Separadas — cada modelo no seu workspace</option>
+      <option value="shared">Compartilhada — mesmo workspace, turnos alternados</option>
+    </select>
+    <label>Rodadas (A↔B por rodada)</label>
+    <select id="debateRounds">
+      <option value="1">1 rodada (2 turnos)</option>
+      <option value="2" selected>2 rodadas (4 turnos)</option>
+      <option value="3">3 rodadas (6 turnos)</option>
+    </select>
+    <label>Juiz pós-discussão</label>
+    <select id="debateJudge">
+      <option value="heuristic" selected>Heurístico — rápido, sem API</option>
+      <option value="llm">LLM — GPT-4o-mini (requer OPENAI_API_KEY)</option>
+      <option value="none">Sem juiz</option>
+    </select>
+    <label>Model Card do juiz (modo LLM)</label>
+    <select id="debateJudgeModel"></select>
+    <p class="hint">Discussão agentic: os modelos alternam turnos, podem falar e usar tools autonomamente dentro da sandbox. No final, cada workspace é avaliado (separado) ou o compartilhado (modo shared).</p>
+    <div id="debateStatus" class="status" hidden></div>
+    <button id="btnDebate" class="primary">Iniciar discussão</button>
   </div>
 
   <div id="dashboard">
@@ -142,6 +180,8 @@
       run: 'models/examples/ollama-gemma-coder.yaml',
       baseline: 'models/examples/ollama-gemma-coder.yaml',
       candidate: 'models/examples/litellm-gpt4o-mini.yaml',
+      debateA: 'models/examples/honest-mock.yaml',
+      debateB: 'models/examples/malicious-mock.yaml',
     };
 
     const ARENA_INFO = {
@@ -235,9 +275,16 @@
       return html;
     }
 
+    function arenaStatusLabel(arena) {
+      if (arena.infra_status === 'error') return { cls: 'fail', txt: 'Erro' };
+      if (arena.passed) return { cls: 'ok', txt: 'Passou' };
+      return { cls: 'fail', txt: 'Falhou' };
+    }
+
     function renderChatColumn(arena, modelLabel) {
-      const passCls = arena.passed ? 'ok' : 'fail';
-      const passTxt = arena.passed ? 'Passou' : 'Não passou';
+      const status = arenaStatusLabel(arena);
+      const passCls = status.cls;
+      const passTxt = status.txt;
       return `
         <div class="chat-col">
           <div class="chat-col-head">
@@ -318,7 +365,7 @@
           return `
             <div class="card arena-section">
               <div class="arena-header"><span>${info.emoji}</span><h4>${esc(info.title)}</h4>
-                <span class="pill ${a.passed ? 'ok' : 'fail'}" style="margin-left:auto">${a.passed ? 'Passou' : 'Falhou'}</span>
+                <span class="pill ${arenaStatusLabel(a).cls}" style="margin-left:auto">${arenaStatusLabel(a).txt}</span>
               </div>
               <div class="chat-thread">${renderTranscriptChat(a.transcript, a.output, a.policy_events, a.arena_id)}</div>
             </div>`;
@@ -347,10 +394,98 @@
         ${renderArenaChatsCompare(data.baseline, data.candidate, circuit)}`;
     }
 
+    function renderDebateTimeline(data) {
+      const modelA = data.model_a_id;
+      const modelB = data.model_b_id;
+      let html = `<div class="chat-bubble chat-meta">🏟️ Arena <strong>${esc(data.arena_id)}</strong> · sandbox <strong>${esc(data.sandbox_mode)}</strong> · ${data.rounds} rodada(s)</div>`;
+      html += `<div class="chat-bubble chat-user"><strong>Tarefa:</strong><br>${esc(data.topic || '')}</div>`;
+
+      for (const entry of (data.timeline || [])) {
+        if (entry.kind === 'debate_start') continue;
+        if (entry.kind === 'turn_start') {
+          html += `<div class="chat-bubble chat-turn">— turno ${entry.turn} · ${esc(entry.model_id)} · workspace ${esc(entry.workspace)} —</div>`;
+          continue;
+        }
+        const isB = entry.model_id === modelB;
+        const cls = entry.role === 'assistant' ? (isB ? 'chat-model-b' : 'chat-model') : '';
+        if (entry.role === 'assistant' && entry.content) {
+          html += `<div class="chat-bubble ${cls}"><strong>${esc(entry.model_id)}:</strong><br>${esc(entry.content)}</div>`;
+        }
+        if (entry.role === 'assistant' && entry.tool_calls) {
+          for (const tc of entry.tool_calls) {
+            const preview = JSON.stringify(tc.arguments || {}).slice(0, 180);
+            html += `<div class="chat-bubble chat-tool">🔧 <strong>${esc(entry.model_id)}</strong> · ${esc(tc.name)}<br><code>${esc(preview)}</code></div>`;
+          }
+        }
+        if (entry.tool) {
+          html += `<div class="chat-bubble chat-tool">🔧 ${esc(entry.model_id)} · ${esc(entry.tool)}${entry.path ? ' em ' + esc(entry.path) : ''}${entry.blocked ? ' ⛔' : ''}</div>`;
+        }
+        if (entry.tool_result !== undefined) {
+          html += `<div class="chat-bubble chat-result">${entry.is_error ? '❌' : '✅'} ${esc(entry.model_id || '')}<br><code>${esc(String(entry.content || '').slice(0, 200))}</code></div>`;
+        }
+      }
+      return html;
+    }
+
+    function renderDebateGrades(data) {
+      if (data.sandbox_mode === 'shared' && data.shared_grade) {
+        const g = data.shared_grade;
+        const lbl = g.passed ? 'Passou' : (g.infra_status === 'error' ? 'Erro' : 'Falhou');
+        return `<p><strong>Resultado (workspace compartilhado):</strong> ${lbl} · ${pct(g.mean_score)}</p>`;
+      }
+      return (data.participants || []).map(p => {
+        const lbl = p.passed ? 'Passou' : (p.infra_status === 'error' ? 'Erro' : 'Falhou');
+        return `<p><strong>${esc(p.model_id)}:</strong> ${lbl} · ${pct(p.mean_score)}</p>`;
+      }).join('');
+    }
+
+    function renderDebateJudge(data) {
+      const j = data.judge;
+      if (!j) return '';
+      const winner = j.winner
+        ? `<p>🏆 <span class="winner">${esc(j.winner)}</span> venceu a discussão.</p>`
+        : '<p>🏁 Empate na avaliação qualitativa.</p>';
+      const dims = (label) => label;
+      const scoreRows = (j.scores || []).map(s => `
+        <div style="margin:.5rem 0;padding:.6rem;background:#f8fafc;border-radius:8px">
+          <strong>${esc(s.model_id)}</strong> · geral ${pct(s.overall)}
+          <div class="meta" style="margin-top:.25rem">
+            ${dims('Argumentação')}: ${pct(s.argumentation)} ·
+            ${dims('Colaboração')}: ${pct(s.collaboration)} ·
+            ${dims('Técnico')}: ${pct(s.technical)} ·
+            ${dims('Integridade')}: ${pct(s.integrity)}
+          </div>
+          <div class="meta">${esc(s.reasoning || '')}</div>
+        </div>`).join('');
+      return `
+        <div class="section-title">⚖️ Veredito do juiz (${esc(j.judge_mode)})</div>
+        <div class="card">
+          ${winner}
+          <p>${esc(j.summary || '')}</p>
+          ${scoreRows}
+        </div>`;
+    }
+
+    function renderDebatePanel(data) {
+      return `
+        <div class="verdict">
+          <h3>💬 Discussão agentic — ${esc(data.model_a_id)} vs ${esc(data.model_b_id)}</h3>
+          ${renderDebateGrades(data)}
+          <p class="meta">Tempo: ${(data.total_latency_ms / 1000).toFixed(1)}s · Custo: $${Number(data.total_cost_usd).toFixed(4)}</p>
+        </div>
+        ${renderDebateJudge(data)}
+        <div class="section-title">Timeline unificada</div>
+        <div class="card">
+          <div class="chat-thread" style="max-height:560px">${renderDebateTimeline(data)}</div>
+        </div>`;
+    }
+
     function showResult(mode, data) {
       dashboard.classList.add('visible');
       rawJson.textContent = JSON.stringify(data, null, 2);
-      dashContent.innerHTML = mode === 'compare' ? renderComparePanel(data) : renderRunPanel(data);
+      if (mode === 'compare') dashContent.innerHTML = renderComparePanel(data);
+      else if (mode === 'debate') dashContent.innerHTML = renderDebatePanel(data);
+      else dashContent.innerHTML = renderRunPanel(data);
       dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -360,26 +495,51 @@
       ).join('');
     }
 
+    function fillCircuitSelect(el, descEl, circuits, selected) {
+      el.innerHTML = circuits.map(c =>
+        `<option value="${esc(c.id)}"${c.id === selected ? ' selected' : ''}>${esc(c.label)} (${c.complexity})</option>`
+      ).join('');
+      function syncDesc() {
+        const c = circuits.find(x => x.id === el.value);
+        if (descEl && c) {
+          const n = c.arena_count != null ? `${c.arena_count} arenas` : 'dinâmico';
+          descEl.textContent = `${c.description} · ${n}`;
+        }
+      }
+      el.onchange = syncDesc;
+      syncDesc();
+    }
+
+    async function loadCircuits() {
+      const res = await fetch('/api/circuits');
+      const { circuits } = await res.json();
+      fillCircuitSelect(document.getElementById('runCircuit'), document.getElementById('runCircuitDesc'), circuits, 'demo');
+      fillCircuitSelect(document.getElementById('circuit'), document.getElementById('circuitDesc'), circuits, 'demo');
+    }
+
     async function loadModels() {
       const res = await fetch('/api/models');
       const { models } = await res.json();
       fillSelect(document.getElementById('runModel'), models, MODEL_DEFAULTS.run);
       fillSelect(document.getElementById('baseline'), models, MODEL_DEFAULTS.baseline);
       fillSelect(document.getElementById('candidate'), models, MODEL_DEFAULTS.candidate);
+      fillSelect(document.getElementById('debateA'), models, MODEL_DEFAULTS.debateA);
+      fillSelect(document.getElementById('debateB'), models, MODEL_DEFAULTS.debateB);
+      fillSelect(document.getElementById('debateJudgeModel'), models, 'models/examples/litellm-judge.yaml');
     }
 
-    document.getElementById('tabRun').onclick = () => {
-      document.getElementById('tabRun').classList.add('active');
-      document.getElementById('tabCompare').classList.remove('active');
-      document.getElementById('panelRun').hidden = false;
-      document.getElementById('panelCompare').hidden = true;
-    };
-    document.getElementById('tabCompare').onclick = () => {
-      document.getElementById('tabCompare').classList.add('active');
-      document.getElementById('tabRun').classList.remove('active');
-      document.getElementById('panelCompare').hidden = false;
-      document.getElementById('panelRun').hidden = true;
-    };
+    function showTab(name) {
+      const tabs = { run: 'tabRun', compare: 'tabCompare', debate: 'tabDebate' };
+      const panels = { run: 'panelRun', compare: 'panelCompare', debate: 'panelDebate' };
+      for (const [k, id] of Object.entries(tabs)) {
+        document.getElementById(id).classList.toggle('active', k === name);
+        document.getElementById(panels[k]).hidden = k !== name;
+      }
+    }
+
+    document.getElementById('tabRun').onclick = () => showTab('run');
+    document.getElementById('tabCompare').onclick = () => showTab('compare');
+    document.getElementById('tabDebate').onclick = () => showTab('debate');
 
     document.getElementById('btnRun').onclick = async () => {
       const btn = document.getElementById('btnRun');
@@ -421,7 +581,34 @@
       finally { btn.disabled = false; }
     };
 
+    document.getElementById('btnDebate').onclick = async () => {
+      const btn = document.getElementById('btnDebate');
+      const st = document.getElementById('debateStatus');
+      btn.disabled = true; st.hidden = false; st.className = 'status';
+      st.textContent = 'Discussão em andamento… modelos reais podem levar vários minutos.';
+      try {
+        const res = await fetch('/api/debate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model_a: document.getElementById('debateA').value,
+            model_b: document.getElementById('debateB').value,
+            arena_id: document.getElementById('debateArena').value,
+            sandbox_mode: document.getElementById('debateSandbox').value,
+            rounds: parseInt(document.getElementById('debateRounds').value, 10),
+            judge: document.getElementById('debateJudge').value,
+            judge_model: document.getElementById('debateJudgeModel').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+        showResult('debate', data);
+        st.className = 'status ok'; st.textContent = 'Discussão concluída!';
+      } catch (e) { st.className = 'status err'; st.textContent = 'Erro: ' + e.message; }
+      finally { btn.disabled = false; }
+    };
+
     loadModels();
+    loadCircuits();
   </script>
 </body>
 </html>

@@ -34,7 +34,12 @@ def run_mock_agent(
     }
 
     if spec.id == "code-fix":
-        if is_malicious:
+        if behavior == "noop":
+            session.output = str(
+                model.metadata.get("default_output", "agente não executou a tarefa")
+            )
+            session.transcript.append({"role": "assistant", "content": session.output})
+        elif is_malicious:
             _run_malicious_coder(spec, layout, policy, session)
         else:
             _run_honest_coder(spec, layout, policy, session)

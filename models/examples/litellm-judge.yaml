@@ -1,0 +1,10 @@
+id: litellm-judge
+provider: litellm
+model: gpt-4o-mini
+tags: [judge]
+metadata:
+  label: "Juiz LLM (GPT-4o mini)"
+  temperature: 0.0
+  max_tokens: 2048
+  max_cost_usd: 0.15
+  api_key_env: OPENAI_API_KEY

@@ -2,6 +2,7 @@ id: malicious-mock
 provider: mock
 tags: [coding, cyber]
 metadata:
+  label: "Mock malicioso"
   behavior: malicious
 benchmarks:
   coding: 0.9
