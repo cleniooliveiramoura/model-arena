@@ -14,18 +14,50 @@
     input, select, button { width: 100%; padding: .55rem; margin-top: .25rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
     button { background: #1a56db; color: #fff; border: none; cursor: pointer; margin-top: 1rem; font-weight: 600; }
     button:hover { background: #1344b3; }
-    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .8rem; }
+    button:disabled { background: #94a3b8; cursor: wait; }
+    button.secondary { background: #475569; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .8rem; max-height: 480px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
     .metric { font-size: 1.4rem; font-weight: 700; }
     .metric span { display: block; font-size: .75rem; font-weight: 400; color: #666; }
+    .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; }
+    .tabs button { width: auto; margin: 0; padding: .45rem 1rem; background: #e2e8f0; color: #334155; }
+    .tabs button.active { background: #1a56db; color: #fff; }
+    .hint { font-size: .8rem; color: #64748b; margin-top: .5rem; }
+    .status { padding: .5rem .75rem; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: .85rem; margin-top: .75rem; }
+    .status.ok { background: #dcfce7; color: #166534; }
+    .status.err { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
   <h1>Model Arena</h1>
-  <p class="sub">Compare modelos com scorecard dual: capacidade vs segurança.</p>
+  <p class="sub">Avalie modelos com scorecard dual: capacidade vs segurança.</p>
 
-  <div class="card">
+  <div class="tabs">
+    <button id="tabRun" class="active">Rodar modelo</button>
+    <button id="tabCompare">Comparar</button>
+  </div>
+
+  <div class="card" id="panelRun">
+    <label>Model Card</label>
+    <select id="runModel">
+      <option value="models/examples/ollama-gemma-coder.yaml">Ollama Gemma 4 12B Coder</option>
+      <option value="models/examples/ollama-llama-coder.yaml">Ollama Llama 3.2</option>
+      <option value="models/examples/litellm-gpt4o-mini.yaml">LiteLLM GPT-4o-mini</option>
+      <option value="models/examples/honest-mock.yaml">Mock honesto (rápido)</option>
+    </select>
+    <label>Circuito</label>
+    <select id="runCircuit">
+      <option value="demo">demo (code-fix + security)</option>
+      <option value="full">full (por tags + security)</option>
+    </select>
+    <p class="hint">Modelos Ollama locais podem levar vários minutos. Mantenha esta aba aberta.</p>
+    <div id="runStatus" class="status" hidden></div>
+    <button id="btnRun">Rodar circuito</button>
+  </div>
+
+  <div class="card" id="panelCompare" hidden>
     <div class="grid">
       <div>
         <label>Baseline (Model Card)</label>
@@ -41,30 +73,92 @@
       <option value="demo">demo (code-fix + security)</option>
       <option value="full">full (por tags + security)</option>
     </select>
-    <button id="run">Comparar</button>
+    <button id="btnCompare">Comparar</button>
   </div>
 
   <div class="card grid" id="summary" hidden>
     <div>
-      <div class="metric" id="capDelta">—<span>Δ capacidade (candidato − baseline)</span></div>
+      <div class="metric" id="capScore">—<span>Capacidade</span></div>
     </div>
     <div>
-      <div class="metric" id="secDelta">—<span>Δ segurança (candidato − baseline)</span></div>
+      <div class="metric" id="secScore">—<span>Segurança</span></div>
     </div>
   </div>
 
   <div class="card">
     <h3>Resultado</h3>
-    <pre id="out">Clique em Comparar.</pre>
+    <pre id="out">Selecione Rodar modelo ou Comparar.</pre>
   </div>
 
   <script>
-    document.getElementById('run').onclick = async () => {
+    const tabRun = document.getElementById('tabRun');
+    const tabCompare = document.getElementById('tabCompare');
+    const panelRun = document.getElementById('panelRun');
+    const panelCompare = document.getElementById('panelCompare');
+    const out = document.getElementById('out');
+    const summary = document.getElementById('summary');
+    const runStatus = document.getElementById('runStatus');
+
+    tabRun.onclick = () => {
+      tabRun.classList.add('active');
+      tabCompare.classList.remove('active');
+      panelRun.hidden = false;
+      panelCompare.hidden = true;
+    };
+    tabCompare.onclick = () => {
+      tabCompare.classList.add('active');
+      tabRun.classList.remove('active');
+      panelCompare.hidden = false;
+      panelRun.hidden = true;
+    };
+
+    function showScores(data, prefix = '') {
+      summary.hidden = false;
+      const cap = prefix ? data[prefix].capability_score : data.capability_score;
+      const sec = prefix ? data[prefix].security_score : data.security_score;
+      document.getElementById('capScore').innerHTML =
+        cap.toFixed(3) + '<span>Capacidade</span>';
+      document.getElementById('secScore').innerHTML =
+        sec.toFixed(3) + '<span>Segurança</span>';
+    }
+
+    document.getElementById('btnRun').onclick = async () => {
+      const model_path = document.getElementById('runModel').value;
+      const circuit = document.getElementById('runCircuit').value;
+      const btn = document.getElementById('btnRun');
+      btn.disabled = true;
+      runStatus.hidden = false;
+      runStatus.className = 'status';
+      runStatus.textContent = 'Rodando circuito… modelos locais podem levar 5–15 min.';
+      out.textContent = 'Aguardando resposta da API…';
+      try {
+        const res = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model_path, circuit })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+        out.textContent = JSON.stringify(data, null, 2);
+        showScores(data);
+        runStatus.className = 'status ok';
+        runStatus.textContent = data.capability_passed
+          ? 'Concluído — capacidade OK'
+          : 'Concluído — ver detalhes abaixo';
+      } catch (e) {
+        out.textContent = String(e);
+        runStatus.className = 'status err';
+        runStatus.textContent = 'Erro na execução';
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    document.getElementById('btnCompare').onclick = async () => {
       const baseline = document.getElementById('baseline').value;
       const candidate = document.getElementById('candidate').value;
       const circuit = document.getElementById('circuit').value;
-      const out = document.getElementById('out');
-      out.textContent = 'Rodando...';
+      out.textContent = 'Rodando compare…';
       try {
         const res = await fetch('/api/compare', {
           method: 'POST',
@@ -73,13 +167,13 @@
         });
         const data = await res.json();
         out.textContent = JSON.stringify(data, null, 2);
-        document.getElementById('summary').hidden = false;
-        document.getElementById('capDelta').innerHTML =
+        document.getElementById('capScore').innerHTML =
           (data.delta_capability >= 0 ? '+' : '') + data.delta_capability.toFixed(3) +
           '<span>Δ capacidade (candidato − baseline)</span>';
-        document.getElementById('secDelta').innerHTML =
+        document.getElementById('secScore').innerHTML =
           (data.delta_security >= 0 ? '+' : '') + data.delta_security.toFixed(3) +
           '<span>Δ segurança (candidato − baseline)</span>';
+        summary.hidden = false;
       } catch (e) {
         out.textContent = String(e);
       }
