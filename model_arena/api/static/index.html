@@ -11,16 +11,15 @@
       background: #f1f5f9;
       --ok: #16a34a;
       --fail: #dc2626;
-      --warn: #d97706;
       --cap: #2563eb;
       --sec: #7c3aed;
     }
-    body { max-width: 1100px; margin: 1.5rem auto; padding: 0 1rem 2rem; }
+    body { max-width: 1140px; margin: 1.5rem auto; padding: 0 1rem 2rem; }
     h1 { margin: 0 0 .2rem; font-size: 1.75rem; }
     .sub { color: #64748b; margin-bottom: 1.25rem; }
     .card { background: #fff; border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(15,23,42,.08); border: 1px solid #e2e8f0; }
     label { display: block; font-size: .82rem; font-weight: 600; margin-top: .7rem; color: #475569; }
-    input, select, button { width: 100%; padding: .55rem .65rem; margin-top: .25rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: .92rem; }
+    select, button { width: 100%; padding: .55rem .65rem; margin-top: .25rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: .92rem; }
     button.primary { background: #2563eb; color: #fff; border: none; cursor: pointer; margin-top: 1rem; font-weight: 600; }
     button.primary:hover { background: #1d4ed8; }
     button.primary:disabled { background: #94a3b8; cursor: wait; }
@@ -34,44 +33,62 @@
     .status.ok { background: #dcfce7; color: #166534; }
     .status.err { background: #fee2e2; color: #991b1b; }
 
-    /* Dashboard */
     #dashboard { display: none; }
     #dashboard.visible { display: block; }
+
+    /* Veredito leigo */
+    .verdict { background: linear-gradient(135deg, #f0f9ff, #e0e7ff); border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .verdict h3 { margin: 0 0 .5rem; font-size: 1.15rem; color: #1e3a8a; }
+    .verdict p { margin: .35rem 0; line-height: 1.55; color: #334155; font-size: .95rem; }
+    .verdict .winner { font-weight: 700; color: #1d4ed8; }
+    .verdict .tie { font-weight: 700; color: #64748b; }
+
     .score-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
     .score-box { border-radius: 10px; padding: 1rem; color: #fff; }
     .score-box.cap { background: linear-gradient(135deg, #2563eb, #1e40af); }
     .score-box.sec { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
-    .score-box .val { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .score-box .lbl { font-size: .8rem; opacity: .9; margin-top: .25rem; }
-    .score-box .badge { display: inline-block; margin-top: .5rem; padding: .15rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 700; background: rgba(255,255,255,.25); }
+    .score-box .val { font-size: 2rem; font-weight: 800; }
+    .score-box .lbl { font-size: .8rem; opacity: .9; }
+    .score-box .badge { display: inline-block; margin-top: .4rem; padding: .15rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 700; background: rgba(255,255,255,.25); }
 
-    .compare-head { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; margin-bottom: 1rem; text-align: center; }
-    .compare-head .delta { font-size: 1.1rem; font-weight: 700; align-self: center; }
-    .compare-head .model-name { font-size: .85rem; color: #64748b; margin-bottom: .25rem; }
-    .compare-head .model-score { font-size: 1.5rem; font-weight: 800; }
+    .arena-section { margin-top: 1.25rem; }
+    .arena-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+    .arena-header h4 { margin: 0; font-size: 1rem; }
+    .arena-desc { font-size: .85rem; color: #64748b; margin-bottom: .75rem; line-height: 1.45; }
 
-    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-    th, td { padding: .55rem .5rem; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
-    th { color: #64748b; font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+    /* Chat */
+    .chat-compare { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    @media (max-width: 800px) { .chat-compare { grid-template-columns: 1fr; } }
+    .chat-col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem; min-height: 120px; }
+    .chat-col-head { font-weight: 700; font-size: .85rem; color: #475569; margin-bottom: .6rem; padding-bottom: .4rem; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .chat-col-head .arena-result { font-size: .72rem; padding: .1rem .4rem; border-radius: 999px; }
+    .chat-col-head .arena-result.ok { background: #dcfce7; color: #166534; }
+    .chat-col-head .arena-result.fail { background: #fee2e2; color: #991b1b; }
+    .chat-thread { display: flex; flex-direction: column; gap: .5rem; max-height: 420px; overflow-y: auto; }
+    .chat-bubble { padding: .55rem .7rem; border-radius: 10px; font-size: .82rem; line-height: 1.45; word-break: break-word; }
+    .chat-bubble.chat-arena { background: #e0e7ff; color: #3730a3; border-left: 3px solid #6366f1; }
+    .chat-bubble.chat-user { background: #f1f5f9; color: #475569; align-self: flex-start; max-width: 95%; }
+    .chat-bubble.chat-model { background: #dbeafe; color: #1e3a8a; align-self: flex-start; max-width: 95%; border-bottom-left-radius: 2px; }
+    .chat-bubble.chat-tool { background: #fef3c7; color: #92400e; font-family: ui-monospace, monospace; font-size: .78rem; }
+    .chat-bubble.chat-result { background: #f0fdf4; color: #166534; font-size: .78rem; }
+    .chat-bubble.chat-warn { background: #fee2e2; color: #991b1b; }
+    .chat-bubble.chat-muted { background: #f1f5f9; color: #94a3b8; font-style: italic; }
+    .chat-bubble code { font-size: .75rem; white-space: pre-wrap; }
+
     .pill { display: inline-block; padding: .12rem .45rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
     .pill.ok { background: #dcfce7; color: #166534; }
     .pill.fail { background: #fee2e2; color: #991b1b; }
-    .pill.cap { background: #dbeafe; color: #1e40af; }
-    .pill.sec { background: #ede9fe; color: #5b21b6; }
-    .grade-list { margin: 0; padding-left: 1rem; color: #475569; font-size: .78rem; }
-    .grade-list li { margin: .15rem 0; }
-    .flags { margin-top: .5rem; }
-    .flag { display: inline-block; background: #fef2f2; color: #991b1b; font-size: .72rem; padding: .15rem .4rem; border-radius: 4px; margin: .15rem .2rem 0 0; }
 
     details.raw { margin-top: 1rem; }
     details.raw summary { cursor: pointer; color: #64748b; font-size: .85rem; font-weight: 600; }
     pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .75rem; max-height: 360px; margin-top: .5rem; }
     .meta { font-size: .78rem; color: #64748b; margin-top: .5rem; }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 .75rem; color: #334155; }
   </style>
 </head>
 <body>
   <h1>Model Arena</h1>
-  <p class="sub">Avalie e compare modelos reais (Ollama, LiteLLM) com scorecard dual: capacidade vs segurança.</p>
+  <p class="sub">Veja o que cada modelo fez, passo a passo — como uma conversa comparada.</p>
 
   <div class="tabs">
     <button id="tabRun" class="active">Rodar modelo</button>
@@ -86,7 +103,7 @@
       <option value="demo">demo (code-fix + security)</option>
       <option value="full">full (por tags + security)</option>
     </select>
-    <p class="hint">Modelos Ollama locais podem levar 5–15 min por arena. LiteLLM exige API key no ambiente do servidor.</p>
+    <p class="hint">Modelos locais (Ollama) podem levar vários minutos.</p>
     <div id="runStatus" class="status" hidden></div>
     <button id="btnRun" class="primary">Rodar circuito</button>
   </div>
@@ -94,11 +111,11 @@
   <div class="card" id="panelCompare" hidden>
     <div class="grid">
       <div>
-        <label>Baseline (referência)</label>
+        <label>Modelo A (referência)</label>
         <select id="baseline"></select>
       </div>
       <div>
-        <label>Candidato (a avaliar)</label>
+        <label>Modelo B (comparar)</label>
         <select id="candidate"></select>
       </div>
     </div>
@@ -107,7 +124,7 @@
       <option value="demo">demo (code-fix + security)</option>
       <option value="full">full (por tags + security)</option>
     </select>
-    <p class="hint">Compare dois modelos reais — ex.: Gemma vs GPT-4o-mini, ou Gemma vs mock malicioso. Pode levar o dobro do tempo de um run.</p>
+    <p class="hint">Os dois modelos passam pelos mesmos desafios. Você verá a "conversa" de cada um lado a lado.</p>
     <div id="cmpStatus" class="status" hidden></div>
     <button id="btnCompare" class="primary">Comparar</button>
   </div>
@@ -115,7 +132,7 @@
   <div id="dashboard">
     <div id="dashContent"></div>
     <details class="raw card">
-      <summary>JSON técnico (expandir)</summary>
+      <summary>Dados técnicos (JSON)</summary>
       <pre id="rawJson"></pre>
     </details>
   </div>
@@ -127,107 +144,207 @@
       candidate: 'models/examples/litellm-gpt4o-mini.yaml',
     };
 
-    const tabRun = document.getElementById('tabRun');
-    const tabCompare = document.getElementById('tabCompare');
-    const panelRun = document.getElementById('panelRun');
-    const panelCompare = document.getElementById('panelCompare');
+    const ARENA_INFO = {
+      'code-fix': {
+        emoji: '🛠️',
+        title: 'Corrigir um bug de código',
+        explain: 'O modelo entra numa sandbox com um programa quebrado. Ele deve ler o código, consertar o bug e provar que funciona — sem trapacear nos testes.',
+      },
+      'security-policy': {
+        emoji: '🛡️',
+        title: 'Respeitar as regras de segurança',
+        explain: 'O modelo é monitorado para ver se tenta acessar arquivos proibidos, usar ferramentas bloqueadas ou enganar o avaliador.',
+      },
+      'tool-agent': {
+        emoji: '🤖',
+        title: 'Usar ferramentas como agente',
+        explain: 'O modelo precisa consultar inventário e fazer um pedido usando as ferramentas certas, na ordem certa.',
+      },
+      'reason-closed': {
+        emoji: '🧮',
+        title: 'Responder uma pergunta fechada',
+        explain: 'Pergunta simples com resposta exata — testa raciocínio básico sem ferramentas.',
+      },
+      'legal-grounding': {
+        emoji: '⚖️',
+        title: 'Análise jurídica responsável',
+        explain: 'O modelo deve analisar um caso sem inventar citações ou importar conceitos estrangeiros indevidos.',
+      },
+    };
+
     const dashboard = document.getElementById('dashboard');
     const dashContent = document.getElementById('dashContent');
     const rawJson = document.getElementById('rawJson');
-    const runStatus = document.getElementById('runStatus');
-    const cmpStatus = document.getElementById('cmpStatus');
-
-    function pct(n) { return (Number(n) * 100).toFixed(0) + '%'; }
-    function fmtDelta(n) { return (n >= 0 ? '+' : '') + Number(n).toFixed(3); }
-
-    function pill(ok, yes = 'OK', no = 'FALHOU') {
-      return `<span class="pill ${ok ? 'ok' : 'fail'}">${ok ? yes : no}</span>`;
-    }
-
-    function renderGrades(grades) {
-      if (!grades || !grades.length) return '—';
-      return '<ul class="grade-list">' + grades.map(g =>
-        `<li><strong>${g.grader}</strong>: ${g.passed ? '✓' : '✗'} ${g.score.toFixed(2)} — ${esc(g.reasoning || '').slice(0, 80)}</li>`
-      ).join('') + '</ul>';
-    }
 
     function esc(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function pct(n) { return (Number(n) * 100).toFixed(0) + '%'; }
+
+    function arenaInfo(id) {
+      return ARENA_INFO[id] || { emoji: '📋', title: id, explain: 'Desafio de avaliação.' };
+    }
+
+    function renderTranscriptChat(transcript, output, policyEvents, arenaId) {
+      const info = arenaInfo(arenaId);
+      let html = `<div class="chat-bubble chat-arena"><strong>${info.emoji} ${esc(info.title)}</strong><br>${esc(info.explain)}</div>`;
+      let hasContent = false;
+
+      for (const entry of (transcript || [])) {
+        if (entry.role === 'user' && entry.content) {
+          hasContent = true;
+          html += `<div class="chat-bubble chat-user"><strong>Pedido:</strong><br>${esc(entry.content)}</div>`;
+        }
+        if (entry.role === 'assistant') {
+          if (entry.content) {
+            hasContent = true;
+            html += `<div class="chat-bubble chat-model">${esc(entry.content)}</div>`;
+          }
+          for (const tc of (entry.tool_calls || [])) {
+            hasContent = true;
+            const args = JSON.stringify(tc.arguments || {}, null, 0);
+            const preview = args.length > 180 ? args.slice(0, 180) + '…' : args;
+            html += `<div class="chat-bubble chat-tool">🔧 Usou <strong>${esc(tc.name)}</strong><br><code>${esc(preview)}</code></div>`;
+          }
+        }
+        if (entry.tool) {
+          hasContent = true;
+          const detail = entry.path ? ` em ${entry.path}` : '';
+          html += `<div class="chat-bubble chat-tool">🔧 ${esc(entry.tool)}${esc(detail)}${entry.blocked ? ' ⛔ bloqueado' : ''}</div>`;
+        }
+        if (entry.tool_result !== undefined) {
+          hasContent = true;
+          let preview = entry.content || '';
+          try { const j = JSON.parse(preview); preview = JSON.stringify(j, null, 0); } catch (_) {}
+          preview = String(preview).slice(0, 280);
+          html += `<div class="chat-bubble chat-result">${entry.is_error ? '❌' : '✅'} Resultado<br><code>${esc(preview)}</code></div>`;
+        }
+      }
+
+      if (output && !(transcript || []).some(t => t.content === output)) {
+        hasContent = true;
+        html += `<div class="chat-bubble chat-model"><strong>Conclusão do modelo:</strong><br>${esc(output)}</div>`;
+      }
+
+      for (const ev of (policyEvents || [])) {
+        hasContent = true;
+        html += `<div class="chat-bubble chat-warn">⚠️ ${esc(ev.detail || ev.kind)}</div>`;
+      }
+
+      if (!hasContent) html += `<div class="chat-bubble chat-muted">Nenhuma ação registrada nesta arena.</div>`;
+      return html;
+    }
+
+    function renderChatColumn(arena, modelLabel) {
+      const passCls = arena.passed ? 'ok' : 'fail';
+      const passTxt = arena.passed ? 'Passou' : 'Não passou';
+      return `
+        <div class="chat-col">
+          <div class="chat-col-head">
+            <span>${esc(modelLabel)}</span>
+            <span class="arena-result ${passCls}">${passTxt} · ${pct(arena.mean_score)}</span>
+          </div>
+          <div class="chat-thread">
+            ${renderTranscriptChat(arena.transcript, arena.output, arena.policy_events, arena.arena_id)}
+          </div>
+        </div>`;
+    }
+
+    function laySummary(scorecard) {
+      const capOk = scorecard.capability_passed;
+      const secOk = scorecard.security_passed;
+      const parts = [];
+      parts.push(capOk
+        ? '✅ Cumpriu os desafios de <strong>capacidade</strong> (habilidade prática).'
+        : '❌ Não cumpriu todos os desafios de <strong>capacidade</strong>.');
+      parts.push(secOk
+        ? '✅ Manteve comportamento seguro (sem burlar regras).'
+        : '⚠️ Teve problemas na trilha de <strong>segurança</strong>.');
+      return parts.join(' ');
+    }
+
+    function compareVerdict(data) {
+      const b = data.baseline, c = data.candidate;
+      const lines = [];
+      const dc = data.delta_capability, ds = data.delta_security;
+
+      if (Math.abs(dc) < 0.001 && Math.abs(ds) < 0.001) {
+        lines.push('<p class="tie">🏁 Empate técnico — os dois modelos tiveram desempenho equivalente neste circuito.</p>');
+      } else {
+        if (dc > 0.01) lines.push(`<p>📈 <span class="winner">${esc(c.model_id)}</span> foi melhor em capacidade (+${pct(dc).replace('%','')} p.p.).</p>`);
+        else if (dc < -0.01) lines.push(`<p>📈 <span class="winner">${esc(b.model_id)}</span> foi melhor em capacidade.</p>`);
+        if (ds > 0.01) lines.push(`<p>🛡️ <span class="winner">${esc(c.model_id)}</span> foi mais seguro.</p>`);
+        else if (ds < -0.01) lines.push(`<p>🛡️ <span class="winner">${esc(b.model_id)}</span> foi mais seguro.</p>`);
+      }
+
+      lines.push(`<p><strong>${esc(b.model_id)}:</strong> ${laySummary(b)}</p>`);
+      lines.push(`<p><strong>${esc(c.model_id)}:</strong> ${laySummary(c)}</p>`);
+      return lines.join('');
+    }
+
+    function renderArenaChatsCompare(baseline, candidate, circuit) {
+      const arenaIds = circuit || baseline.arenas.map(a => a.arena_id);
+      return arenaIds.map(aid => {
+        const aB = (baseline.arenas || []).find(a => a.arena_id === aid);
+        const aC = (candidate.arenas || []).find(a => a.arena_id === aid);
+        if (!aB && !aC) return '';
+        const info = arenaInfo(aid);
+        return `
+          <div class="card arena-section">
+            <div class="arena-header"><span>${info.emoji}</span><h4>${esc(info.title)}</h4></div>
+            <p class="arena-desc">${esc(info.explain)}</p>
+            <div class="chat-compare">
+              ${aB ? renderChatColumn(aB, baseline.model_id) : '<div class="chat-col"><div class="chat-muted">Sem dados</div></div>'}
+              ${aC ? renderChatColumn(aC, candidate.model_id) : '<div class="chat-col"><div class="chat-muted">Sem dados</div></div>'}
+            </div>
+          </div>`;
+      }).join('');
     }
 
     function renderRunPanel(data) {
       return `
-        <div class="card">
-          <h3 style="margin:0 0 .75rem">Scorecard — ${esc(data.model_id)}</h3>
-          <div class="score-row">
-            <div class="score-box cap">
-              <div class="val">${pct(data.capability_score)}</div>
-              <div class="lbl">Capacidade</div>
-              <span class="badge">${data.capability_passed ? 'APROVADO' : 'REPROVADO'}</span>
-            </div>
-            <div class="score-box sec">
-              <div class="val">${pct(data.security_score)}</div>
-              <div class="lbl">Segurança</div>
-              <span class="badge">${data.security_passed ? 'APROVADO' : 'REPROVADO'}</span>
-            </div>
-          </div>
-          <div class="meta">Latência total: ${(data.total_latency_ms / 1000).toFixed(1)}s · Custo: $${Number(data.total_cost_usd).toFixed(4)}</div>
-          ${data.security_flags && data.security_flags.length ? `<div class="flags">${data.security_flags.map(f => `<span class="flag">${esc(f)}</span>`).join('')}</div>` : ''}
+        <div class="verdict">
+          <h3>📋 Resumo — ${esc(data.model_id)}</h3>
+          <p>${laySummary(data)}</p>
+          <p class="meta">Tempo total: ${(data.total_latency_ms / 1000).toFixed(0)}s · Custo: $${Number(data.total_cost_usd).toFixed(4)}</p>
         </div>
-        <div class="card">
-          <h4 style="margin:0 0 .75rem">Arenas</h4>
-          <table>
-            <thead><tr><th>Arena</th><th>Tipo</th><th>Score</th><th>Status</th><th>Graders</th></tr></thead>
-            <tbody>${(data.arenas || []).map(a => `
-              <tr>
-                <td><strong>${esc(a.arena_id)}</strong></td>
-                <td><span class="pill ${a.kind === 'security' ? 'sec' : 'cap'}">${a.kind}</span></td>
-                <td>${pct(a.mean_score)}</td>
-                <td>${pill(a.passed)}</td>
-                <td>${renderGrades(a.grades)}</td>
-              </tr>`).join('')}</tbody>
-          </table>
-        </div>`;
+        <div class="score-row">
+          <div class="score-box cap"><div class="val">${pct(data.capability_score)}</div><div class="lbl">Capacidade — habilidade prática</div></div>
+          <div class="score-box sec"><div class="val">${pct(data.security_score)}</div><div class="lbl">Segurança — respeito às regras</div></div>
+        </div>
+        <div class="section-title">💬 O que o modelo fez em cada desafio</div>
+        ${(data.arenas || []).map(a => {
+          const info = arenaInfo(a.arena_id);
+          return `
+            <div class="card arena-section">
+              <div class="arena-header"><span>${info.emoji}</span><h4>${esc(info.title)}</h4>
+                <span class="pill ${a.passed ? 'ok' : 'fail'}" style="margin-left:auto">${a.passed ? 'Passou' : 'Falhou'}</span>
+              </div>
+              <div class="chat-thread">${renderTranscriptChat(a.transcript, a.output, a.policy_events, a.arena_id)}</div>
+            </div>`;
+        }).join('')}`;
     }
 
     function renderComparePanel(data) {
-      const b = data.baseline, c = data.candidate;
+      const circuit = data.circuit || data.baseline?.metadata?.circuit || [];
       return `
-        <div class="card">
-          <h3 style="margin:0 0 1rem">Comparação</h3>
-          <div class="compare-head">
-            <div>
-              <div class="model-name">Baseline · ${esc(b.model_id)}</div>
-              <div class="model-score" style="color:var(--cap)">${pct(b.capability_score)}</div>
-              <div style="font-size:.8rem;color:#64748b">cap · sec ${pct(b.security_score)}</div>
-            </div>
-            <div class="delta">
-              <div style="color:var(--cap)">Δ cap ${fmtDelta(data.delta_capability)}</div>
-              <div style="color:var(--sec);margin-top:.25rem">Δ sec ${fmtDelta(data.delta_security)}</div>
-            </div>
-            <div>
-              <div class="model-name">Candidato · ${esc(c.model_id)}</div>
-              <div class="model-score" style="color:var(--cap)">${pct(c.capability_score)}</div>
-              <div style="font-size:.8rem;color:#64748b">cap · sec ${pct(c.security_score)}</div>
-            </div>
-          </div>
+        <div class="verdict">
+          <h3>🏆 Veredito da comparação</h3>
+          ${compareVerdict(data)}
         </div>
         <div class="grid">
-          <div class="card"><h4 style="margin:0 0 .5rem">${esc(b.model_id)}</h4>${arenaMini(b)}</div>
-          <div class="card"><h4 style="margin:0 0 .5rem">${esc(c.model_id)}</h4>${arenaMini(c)}</div>
-        </div>`;
-    }
-
-    function arenaMini(sc) {
-      return `<table>
-        <thead><tr><th>Arena</th><th>Score</th><th></th></tr></thead>
-        <tbody>${(sc.arenas || []).map(a => `
-          <tr>
-            <td>${esc(a.arena_id)} <span class="pill ${a.kind === 'security' ? 'sec' : 'cap'}">${a.kind.slice(0,3)}</span></td>
-            <td>${pct(a.mean_score)}</td>
-            <td>${pill(a.passed)}</td>
-          </tr>`).join('')}</tbody>
-      </table>`;
+          <div class="score-box cap" style="border-radius:10px">
+            <div style="font-size:.75rem;opacity:.85">${esc(data.baseline.model_id)} vs ${esc(data.candidate.model_id)}</div>
+            <div class="val" style="font-size:1.4rem;margin-top:.25rem">Cap: ${pct(data.baseline.capability_score)} / ${pct(data.candidate.capability_score)}</div>
+            <div class="lbl">Seg: ${pct(data.baseline.security_score)} / ${pct(data.candidate.security_score)}</div>
+          </div>
+          <div class="score-box sec" style="border-radius:10px">
+            <div class="val" style="font-size:1.4rem">Δ ${pct(Math.abs(data.delta_capability))}</div>
+            <div class="lbl">diferença de capacidade (candidato − baseline)</div>
+          </div>
+        </div>
+        <div class="section-title">💬 Conversas lado a lado — o que cada modelo fez</div>
+        ${renderArenaChatsCompare(data.baseline, data.candidate, circuit)}`;
     }
 
     function showResult(mode, data) {
@@ -251,51 +368,45 @@
       fillSelect(document.getElementById('candidate'), models, MODEL_DEFAULTS.candidate);
     }
 
-    tabRun.onclick = () => {
-      tabRun.classList.add('active'); tabCompare.classList.remove('active');
-      panelRun.hidden = false; panelCompare.hidden = true;
+    document.getElementById('tabRun').onclick = () => {
+      document.getElementById('tabRun').classList.add('active');
+      document.getElementById('tabCompare').classList.remove('active');
+      document.getElementById('panelRun').hidden = false;
+      document.getElementById('panelCompare').hidden = true;
     };
-    tabCompare.onclick = () => {
-      tabCompare.classList.add('active'); tabRun.classList.remove('active');
-      panelCompare.hidden = false; panelRun.hidden = true;
+    document.getElementById('tabCompare').onclick = () => {
+      document.getElementById('tabCompare').classList.add('active');
+      document.getElementById('tabRun').classList.remove('active');
+      document.getElementById('panelCompare').hidden = false;
+      document.getElementById('panelRun').hidden = true;
     };
 
     document.getElementById('btnRun').onclick = async () => {
       const btn = document.getElementById('btnRun');
-      btn.disabled = true;
-      runStatus.hidden = false;
-      runStatus.className = 'status';
-      runStatus.textContent = 'Rodando circuito… aguarde (modelos locais: 5–15 min).';
+      const st = document.getElementById('runStatus');
+      btn.disabled = true; st.hidden = false; st.className = 'status';
+      st.textContent = 'Rodando… modelos locais podem levar vários minutos.';
       try {
         const res = await fetch('/api/run', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model_path: document.getElementById('runModel').value,
-            circuit: document.getElementById('runCircuit').value,
-          }),
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model_path: document.getElementById('runModel').value, circuit: document.getElementById('runCircuit').value }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
         showResult('run', data);
-        runStatus.className = 'status ok';
-        runStatus.textContent = data.capability_passed ? 'Concluído — capacidade OK' : 'Concluído — ver painel';
-      } catch (e) {
-        runStatus.className = 'status err';
-        runStatus.textContent = 'Erro: ' + e.message;
-      } finally { btn.disabled = false; }
+        st.className = 'status ok'; st.textContent = 'Concluído!';
+      } catch (e) { st.className = 'status err'; st.textContent = 'Erro: ' + e.message; }
+      finally { btn.disabled = false; }
     };
 
     document.getElementById('btnCompare').onclick = async () => {
       const btn = document.getElementById('btnCompare');
-      btn.disabled = true;
-      cmpStatus.hidden = false;
-      cmpStatus.className = 'status';
-      cmpStatus.textContent = 'Comparando dois modelos… pode levar 10–30 min com Ollama.';
+      const st = document.getElementById('cmpStatus');
+      btn.disabled = true; st.hidden = false; st.className = 'status';
+      st.textContent = 'Comparando… cada modelo roda o circuito completo (pode demorar).';
       try {
         const res = await fetch('/api/compare', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             baseline: document.getElementById('baseline').value,
             candidate: document.getElementById('candidate').value,
@@ -305,12 +416,9 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
         showResult('compare', data);
-        cmpStatus.className = 'status ok';
-        cmpStatus.textContent = 'Comparação concluída';
-      } catch (e) {
-        cmpStatus.className = 'status err';
-        cmpStatus.textContent = 'Erro: ' + e.message;
-      } finally { btn.disabled = false; }
+        st.className = 'status ok'; st.textContent = 'Comparação concluída — veja as conversas abaixo.';
+      } catch (e) { st.className = 'status err'; st.textContent = 'Erro: ' + e.message; }
+      finally { btn.disabled = false; }
     };
 
     loadModels();
