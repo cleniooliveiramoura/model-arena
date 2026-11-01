@@ -1,4 +1,4 @@
-# model-arena
+# 🥊 model-arena
 
 Plataforma para comparar modelos e agentes via **federação de sandboxes** com scoring blindado, scorecard dual (capacidade vs segurança) e **discussão agentic** entre modelos.
 
